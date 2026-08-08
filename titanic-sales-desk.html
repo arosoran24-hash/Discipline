@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Titanic Sales Desk</title>
+<meta name="theme-color" content="#12202F">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Sales Desk">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root{
+    --navy:#12202F; --navy-deep:#0C1723; --brass:#C9A227; --brass-dark:#A98617;
+    --paper:#F6F4EF; --ink:#1C2733; --rule:#E3DFD5; --mut:#64748B;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       background:var(--paper); color:var(--ink); padding-bottom:calc(86px + env(safe-area-inset-bottom));}
+  .serif{font-family:Georgia,"Times New Roman",serif;}
+  .wrap{max-width:520px; margin:0 auto; padding:16px;}
+  .card{background:#fff; border:1px solid var(--rule); border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.05); margin-bottom:12px;}
+  .card .pad{padding:16px;}
+  .h{font-size:18px; font-weight:700; margin-bottom:10px;}
+  label{display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--mut); margin:10px 0 4px;}
+  input,select,textarea{width:100%; border:1px solid #CBD5E1; border-radius:9px; background:#fff; padding:10px 12px; font-size:16px; color:var(--ink); font-family:inherit;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brass); outline-offset:0;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  .btn{display:block; width:100%; border:0; border-radius:10px; padding:13px; font-size:16px; font-weight:700;
+       color:#fff; background:var(--brass-dark); cursor:pointer; margin-top:12px;}
+  .btn:disabled{background:var(--navy); opacity:.4;}
+  .btn.navy{background:var(--navy);}
+  .mini{display:inline-block; border:0; border-radius:8px; padding:7px 11px; font-size:12px; font-weight:700;
+        color:#fff; background:var(--navy); cursor:pointer; white-space:nowrap;}
+  .mini.danger{background:#fff; color:#BE123C; border:1px solid #FDA4AF;}
+  .chip{display:inline-block; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:700;}
+  .c-green{background:#D1FAE5; color:#065F46;} .c-amber{background:#FEF3C7; color:#92400E;}
+  .c-red{background:#FFE4E6; color:#9F1239;} .c-slate{background:#E2E8F0; color:#334155;}
+  .muted{color:var(--mut); font-size:12px;}
+  .err{color:#BE123C; font-size:13px; font-weight:600; margin-top:8px;}
+  /* header */
+  #hdr{position:sticky; top:0; z-index:20; background:var(--navy); color:#fff; padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+       display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  #hdr .t{font-size:17px; font-weight:700; letter-spacing:.03em;}
+  #hdr .t b{color:var(--brass);}
+  #hdr .sub{font-size:11px; color:#CBD5E1; margin-top:2px;}
+  #hdr button{background:transparent; border:0; color:#E2E8F0; padding:8px; border-radius:9px; cursor:pointer; font-size:17px;}
+  /* nav */
+  #nav{position:fixed; bottom:0; left:0; right:0; z-index:20; background:#fff; border-top:1px solid var(--rule); padding-bottom:env(safe-area-inset-bottom);}
+  #nav .in{max-width:520px; margin:0 auto; display:flex;}
+  #nav button{flex:1; background:transparent; border:0; padding:9px 0 8px; cursor:pointer; color:#8A94A0;
+              font-size:10px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:2px;}
+  #nav button .ic{font-size:18px; line-height:1;}
+  #nav button.on{color:var(--navy);} #nav button.on .ic{color:var(--brass-dark);}
+  /* list rows */
+  .entry{display:flex; gap:10px; padding:12px 14px; align-items:flex-start;}
+  .entry .grow{flex:1; min-width:0;}
+  .entry .l1{font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .entry .l2{font-size:13px; color:#475569; margin-top:2px;}
+  .entry .l3{font-size:11px; color:var(--mut); margin-top:2px;}
+  .entry .acts{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .bin{background:transparent; border:0; color:#94A3B8; cursor:pointer; font-size:15px; padding:4px;}
+  /* report */
+  .sec{padding:10px 16px; border-bottom:1px solid var(--rule);}
+  .sec:last-child{border-bottom:0;}
+  .sec .st{font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--brass-dark); margin-bottom:4px;}
+  .kv{display:flex; justify-content:space-between; padding:5px 0; font-size:14px;}
+  .kv span:first-child{color:#475569;} .kv span:last-child{font-weight:600;}
+  .kv.strong span:last-child{font-weight:800;}
+  /* meter */
+  .meter{border-radius:10px; padding:11px; font-size:13px; margin-top:12px;}
+  .meter.ok{background:#F0F4EC; border:1px solid #D6E0CC;}
+  .meter.bad{background:#FDE8E8; border:1px solid #F5B5B5;}
+  .meter .top{display:flex; justify-content:space-between; font-weight:700;}
+  .meter .bar{height:8px; background:#fff; border-radius:999px; overflow:hidden; margin-top:6px;}
+  .meter .fill{height:100%; border-radius:999px; background:var(--brass-dark);}
+  .meter.bad .fill{background:#DC2626;}
+  /* toast */
+  #toast{position:fixed; bottom:calc(78px + env(safe-area-inset-bottom)); left:16px; right:16px; z-index:30; display:none;}
+  #toast .in{max-width:520px; margin:0 auto; background:var(--navy-deep); color:#fff; border-radius:12px;
+             padding:12px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 6px 18px rgba(0,0,0,.3); font-size:14px;}
+  #toast a{background:var(--brass); color:#1C2733; text-decoration:none; font-weight:700; font-size:13px;
+           border-radius:8px; padding:7px 12px;}
+  #toast .x{background:transparent; border:0; color:#94A3B8; font-size:15px; cursor:pointer;}
+  /* modal */
+  #modal{position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.5); display:none; align-items:flex-end; justify-content:center; padding:16px;}
+  #modal .box{width:100%; max-width:380px; background:#fff; border-radius:16px; padding:18px; margin-bottom:10px;}
+  .screen{display:none;} .screen.on{display:block;}
+  .center{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .logo{font-size:24px; font-weight:700; letter-spacing:.03em; color:var(--navy); text-align:center;}
+  .logo b{color:var(--brass-dark);}
+  .seg{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .seg button{border:1px solid #CBD5E1; background:#fff; color:var(--ink); border-radius:9px; padding:11px; font-size:14px; font-weight:700; cursor:pointer;}
+  .seg button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .sync{font-size:11px; color:var(--mut); text-align:center; margin:6px 0 0;}
+</style>
+</head>
+<body>
+
+<!-- ============ TOKEN SETUP ============ -->
+<div id="screen-token" class="screen">
+  <div class="center"><div style="width:100%;max-width:380px;">
+    <div class="logo serif">TITANIC <b>SALES DESK</b></div>
+    <div class="muted" style="text-align:center;margin:6px 0 16px;">Connect the private data repo</div>
+    <div class="card"><div class="pad">
+      <label>GitHub username (owner)</label>
+      <input id="tk-owner" placeholder="arosoran24-hash">
+      <label>Private data repo</label>
+      <input id="tk-repo" placeholder="sales-data">
+      <label>Fine-grained token (Contents: read &amp; write, that repo only)</label>
+      <input id="tk-token" type="password" placeholder="github_pat_…">
+      <div id="tk-err" class="err" style="display:none;"></div>
+      <button class="btn" onclick="saveToken()">Connect</button>
+      <div class="muted" style="margin-top:10px;">
+        Stored on this device only. Use a separate repo + token for sales so staff tokens can't reach your other data repos.
+      </div>
+    </div></div>
+  </div></div>
+</div>
+
+<!-- ============ SIGN IN ============ -->
+<div id="screen-signin" class="screen">
+  <div class="center"><div style="width:100%;max-width:380px;">
+    <div class="logo serif">TITANIC <b>SALES DESK</b></div>
+    <div class="muted" style="text-align:center;margin:6px 0 16px;">Sulaymaniyah · shared team log</div>
+    <div class="card"><div class="pad">
+      <label>Your name</label>
+      <input id="si-name" placeholder="Name">
+      <select id="si-namesel" style="display:none;"></select>
+      <label>Sign in as</label>
+      <div class="seg" id="si-seg">
+        <button id="si-reg" class="on" onclick="pickRole('regular')">Sales team</button>
+        <button id="si-adm" onclick="pickRole('admin')">Admin</button>
+        <button id="si-banq" style="display:none;" onclick="pickRole('banquet')">Banquet</button>
+      </div>
+      <label id="si-pwlabel">Team password</label>
+      <input id="si-pw" type="password" placeholder="Password">
+      <div id="si-err" class="err" style="display:none;"></div>
+      <button class="btn" onclick="signIn()">Enter</button>
+      <div class="muted" style="margin-top:10px;">
+        Sales team can add records and update statuses. The report, deletions, cancellations, and settings are admin-only.
+      </div>
+    </div></div>
+  </div></div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="screen-app" class="screen">
+  <div id="hdr">
+    <div>
+      <div class="t serif">TITANIC <b>SALES DESK</b></div>
+      <div class="sub" id="hdr-sub"></div>
+    </div>
+    <div style="display:flex;gap:2px;">
+      <button onclick="refresh(true)" title="Refresh">&#8635;</button>
+      <button id="btn-settings" onclick="openSettings()" title="Settings">&#9881;</button>
+      <button onclick="signOut()" title="Sign out">&#10162;</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- REPORT -->
+    <div id="tab-report" style="display:none;">
+      <div class="row2" style="align-items:end;">
+        <div><label>Report date</label><input type="date" id="rp-date" onchange="renderReport()"></div>
+        <a id="rp-mail" class="btn" style="text-align:center;text-decoration:none;margin-top:0;background:var(--brass);color:#1C2733;">&#9993; Email</a>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="pad" style="padding-bottom:6px;"><div class="h serif" id="rp-title"></div></div>
+        <div id="rp-body"></div>
+      </div>
+    </div>
+
+    <!-- CALLS -->
+    <div id="tab-calls" style="display:none;">
+      <div class="card"><div class="pad">
+        <div class="h serif">Log a client touch</div>
+        <div class="row2">
+          <div><label>Date</label><input type="date" id="c-date"></div>
+          <div><label>Salesperson</label><input id="c-sp"></div>
+        </div>
+        <label>Account</label><input id="c-account" placeholder="Company / organization">
+        <label>Contact</label><input id="c-contact" placeholder="Person met or called">
+        <div class="row2">
+          <div><label>Type</label><select id="c-type"></select></div>
+          <div><label>Outcome</label><select id="c-outcome"></select></div>
+        </div>
+        <label>Notes</label><input id="c-notes" placeholder="What happened">
+        <button class="btn" onclick="saveCall()">Save touch</button>
+      </div></div>
+      <div id="list-calls"></div>
+    </div>
+
+    <!-- FOLLOW-UPS -->
+    <div id="tab-fus" style="display:none;">
+      <div class="card"><div class="pad">
+        <div class="h serif">Log a follow-up</div>
+        <label>Account</label><input id="f-account" placeholder="Company / organization">
+        <label>Action required</label><input id="f-action" placeholder="What must happen">
+        <div class="row2">
+          <div><label>Owner</label><input id="f-owner"></div>
+          <div><label>Due date</label><input type="date" id="f-due"></div>
+        </div>
+        <button class="btn" onclick="saveFu()">Save follow-up</button>
+      </div></div>
+      <div id="list-fus"></div>
+    </div>
+
+    <!-- ISSUES -->
+    <div id="tab-issues" style="display:none;">
+      <div class="card"><div class="pad">
+        <div class="h serif">Log an issue</div>
+        <label>Account / guest</label><input id="i-account" placeholder="Who it concerns">
+        <label>Description</label><input id="i-desc" placeholder="What went wrong">
+        <div class="row2">
+          <div><label>Category</label><select id="i-cat"></select></div>
+          <div><label>Severity</label><select id="i-sev"></select></div>
+        </div>
+        <button class="btn" onclick="saveIssue()">Save issue</button>
+      </div></div>
+      <div id="list-issues"></div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div id="tab-bookings" style="display:none;">
+      <div class="card"><div class="pad">
+        <div class="h serif">Log a booking</div>
+        <label>Account</label><input id="b-account" placeholder="Company / organization">
+        <div class="row2">
+          <div><label>Booked on</label><input type="date" id="b-booked"></div>
+          <div><label>Salesperson</label><input id="b-sp"></div>
+        </div>
+        <div class="row2">
+          <div><label>Check-in</label><input type="date" id="b-ci" oninput="renderMeter()"></div>
+          <div><label>Check-out</label><input type="date" id="b-co" oninput="renderMeter()"></div>
+        </div>
+        <div class="row3">
+          <div><label>Rooms</label><input type="number" min="1" id="b-rooms" value="1" oninput="renderMeter()"></div>
+          <div><label>Pax</label><input type="number" min="0" id="b-pax" placeholder="Guests"></div>
+          <div><label>ADR ($)</label><input type="number" min="0" id="b-adr" oninput="renderMeter()"></div>
+        </div>
+        <div class="row2">
+          <div><label>Room type</label><select id="b-rtype"></select></div>
+          <div><label>Payment / board</label><select id="b-pay"></select></div>
+        </div>
+        <div class="row2">
+          <div><label>Segment</label><select id="b-seg"></select></div>
+          <div><label>Status</label><select id="b-status"><option>Definite</option><option>Tentative</option></select></div>
+        </div>
+        <label>Notes</label><input id="b-notes" placeholder="Special requests, billing details…">
+        <div id="b-meter"></div>
+        <div id="b-sum" class="muted" style="margin-top:8px;"></div>
+        <div id="b-err" class="err" style="display:none;"></div>
+        <button class="btn" id="b-save" onclick="saveBooking()">Save booking</button>
+      </div></div>
+      <div id="list-bookings"></div>
+      <div class="muted">Overbooking is blocked against bookings logged here vs your room count. Front-desk and OTA bookings live in the PMS.</div>
+    </div>
+
+    <!-- EVENTS / BEO -->
+    <div id="tab-beos" style="display:none;">
+      <div class="card" id="beo-form-card"><div class="pad">
+        <div class="h serif" id="beo-form-title">Log an event (BEO)</div>
+        <label>Event name</label><input id="e-name" placeholder="e.g. Annual dinner">
+        <label>Account / client</label><input id="e-account" placeholder="Company / organization">
+        <div class="row2">
+          <div><label>Event date</label><input type="date" id="e-date"></div>
+          <div><label>Type</label><select id="e-type"></select></div>
+        </div>
+        <div class="row2">
+          <div><label>Start</label><input type="time" id="e-start"></div>
+          <div><label>End</label><input type="time" id="e-end"></div>
+        </div>
+        <div class="row3">
+          <div><label>Venue / hall</label><input id="e-venue" placeholder="Hall"></div>
+          <div><label>Pax</label><input type="number" min="1" id="e-pax" oninput="renderBeoSum()"></div>
+          <div><label>Price / pax ($)</label><input type="number" min="0" id="e-price" oninput="renderBeoSum()"></div>
+        </div>
+        <div class="row2">
+          <div><label>Status</label><select id="e-status"><option>Tentative</option><option>Definite</option></select></div>
+          <div><label>Booked on</label><input type="date" id="e-booked"></div>
+        </div>
+        <label>Menu / setup notes</label><input id="e-notes" placeholder="F&amp;B, seating, AV…">
+        <div id="e-sum" class="muted" style="margin-top:8px;"></div>
+        <button class="btn" id="beo-save-btn" onclick="saveBeo()">Save event</button>
+        <button class="btn navy" id="beo-cancel-edit" style="display:none;" onclick="beoEditCancel()">Cancel change</button>
+      </div></div>
+      <div id="list-beos"></div>
+    </div>
+
+    <div class="sync" id="sync-note"></div>
+  </div>
+
+  <div id="nav"><div class="in" id="nav-in"></div></div>
+</div>
+
+<!-- toast -->
+<div id="toast"><div class="in">
+  <span style="color:var(--brass);">&#10003;</span>
+  <span id="toast-msg" style="flex:1;"></span>
+  <a id="toast-mail" href="#" style="display:none;">Email</a>
+  <button class="x" onclick="hideToast()">&#10005;</button>
+</div></div>
+
+<!-- settings modal -->
+<div id="modal"><div class="box">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <div class="h serif" style="margin:0;">Settings</div>
+    <button class="bin" onclick="closeSettings()">&#10005;</button>
+  </div>
+  <label>Manager email (reports go here)</label>
+  <input id="st-email" type="email" placeholder="you@titanichotel.com">
+  <label>Total rooms</label>
+  <input id="st-rooms" type="number" min="1">
+  <label>Sales team password</label>
+  <input id="st-teampw" placeholder="sozan">
+  <label>Banquet password</label>
+  <input id="st-banqpw" placeholder="banquet">
+  <label>Reservations email (To)</label>
+  <input id="st-resto" type="email" placeholder="reservations@titanichotel.com">
+  <label>Reservations CC (commas between)</label>
+  <input id="st-rescc" placeholder="fom@…, accounts@…">
+  <label>Email signature (added under every email)</label>
+  <textarea id="st-sig" rows="4" placeholder="Titanic Hotel & SPA&#10;Sulaymaniyah, Kurdistan Region, Iraq&#10;+964 …"></textarea>
+  <label>Team directory (used at sign-in and in emails)</label>
+  <div id="st-team"></div>
+  <div class="row3" style="margin-top:6px;">
+    <input id="tm-name" placeholder="Name">
+    <input id="tm-pos" placeholder="Position">
+    <input id="tm-email" placeholder="email@…">
+  </div>
+  <button class="btn navy" onclick="teamAdd()">Add member</button>
+  <div class="muted" style="margin-top:10px;">Data is shared through the private repo — everyone with the app and token sees the same logs.</div>
+  <button class="btn" onclick="saveSettings()">Save settings</button>
+  <button class="btn navy" onclick="disconnectRepo()">Disconnect repo on this device</button>
+</div></div>
+
+<script>
+/* ================= config & constants ================= */
+const ADMIN_PASSWORD = "aro is the best";
+const DATA_PATH = "sales.json";
+const BRANCH = "main";
+const LS = { token:"tsd_token", owner:"tsd_owner", repo:"tsd_repo" };
+
+const CALL_TYPES = ["Sales Call","Site Inspection","Proposal Sent","Follow-up","Entertainment / F&B","Email / WhatsApp","Other"];
+const OUTCOMES = ["Positive — advancing","Neutral — follow up","Negative — stalled","Won","Lost"];
+const SEGMENTS = ["Corporate","MICE / Event","Group","NGO / International Org","Government","Leisure / Other"];
+const ROOM_TYPES = ["DR","SR","DS","FS","EX"];
+const PAY_TERMS = ["On Account","BO","BB","HB","FB","AI"];
+const ISSUE_CATS = ["Rate","Billing","Service","Availability","Competitor","Internal","Other"];
+const SEVERITIES = ["Low","Medium","High"];
+const EVENT_TYPES = ["Dinner / Gala","Conference / Meeting","Wedding","Workshop / Training","Cocktail / Reception","Other"];
+
+const DEFAULT_DATA = { calls:[], fus:[], issues:[], bookings:[], beos:[],
+  settings:{ managerEmail:"", totalRooms:87, teamPassword:"sozan", banquetPassword:"banquet",
+    resTo:"reservations@titanichotel-sul.com",
+    resCc:"gm@titanichotel-sul.com,arosoran24@gmail.com,accounting@titanichotel-sul.com",
+    emailSig:"", team:[
+      { name:"Sozan", position:"", email:"" },
+      { name:"Jainar", position:"", email:"" }
+    ] } };
+
+/* ================= state ================= */
+let S = { data: structuredClone(DEFAULT_DATA), sha: null, user: null, tab: "calls", role: "regular" };
+let pendingRole = "regular";
+
+/* ================= helpers ================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const money = (n) => "$" + Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+const todayISO = () => { const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const addDays = (iso,n) => { const [y,m,d]=iso.split("-").map(Number);
+  return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10); };
+const nightsBetween = (ci,co) => { const [a,b,c]=ci.split("-").map(Number); const [x,y,z]=co.split("-").map(Number);
+  return Math.round((Date.UTC(x,y-1,z)-Date.UTC(a,b-1,c))/86400000); };
+const uid = () => Date.now() + "-" + Math.random().toString(36).slice(2,7);
+const mailto = (to,sub,body,cc) => `mailto:${to||""}?${cc?`cc=${encodeURIComponent(cc)}&`:""}subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+const withSig = (st, body) => {
+  const u = S.user || {};
+  const lines = [];
+  if (u.name) lines.push("Best regards,", u.name + (u.position ? " — " + u.position : ""));
+  if (u.email) lines.push(u.email);
+  if (st.emailSig) lines.push(st.emailSig);
+  return lines.length ? body + "\n\n" + lines.join("\n") : body;
+};
+const b64enc = (s) => btoa(unescape(encodeURIComponent(s)));
+const b64dec = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g,""))));
+
+/* ================= github sync ================= */
+const cfg = () => ({ token: localStorage.getItem(LS.token), owner: localStorage.getItem(LS.owner), repo: localStorage.getItem(LS.repo) });
+const ghHeaders = (t) => ({ "Authorization":"Bearer "+t, "Accept":"application/vnd.github+json" });
+const ghUrl = () => { const c=cfg(); return `https://api.github.com/repos/${c.owner}/${c.repo}/contents/${DATA_PATH}`; };
+
+async function ghGet(){
+  const c = cfg();
+  const r = await fetch(ghUrl()+`?ref=${BRANCH}&t=${Date.now()}`, { headers: ghHeaders(c.token), cache:"no-store" });
+  if (r.status === 404) return { data: structuredClone(DEFAULT_DATA), sha: null };
+  if (!r.ok) throw new Error("GitHub read failed ("+r.status+")");
+  const j = await r.json();
+  let data;
+  try { data = JSON.parse(b64dec(j.content)); } catch { data = structuredClone(DEFAULT_DATA); }
+  for (const k of ["calls","fus","issues","bookings","beos"]) if (!Array.isArray(data[k])) data[k] = [];
+  data.settings = Object.assign(structuredClone(DEFAULT_DATA.settings), data.settings || {});
+  if (!Array.isArray(data.settings.team) || data.settings.team.length === 0) data.settings.team = structuredClone(DEFAULT_DATA.settings.team);
+  return { data, sha: j.sha };
+}
+
+async function ghPut(data, sha){
+  const c = cfg();
+  const body = { message: "sales desk update", content: b64enc(JSON.stringify(data, null, 1)), branch: BRANCH };
+  if (sha) body.sha = sha;
+  const r = await fetch(ghUrl(), { method:"PUT", headers: ghHeaders(c.token), body: JSON.stringify(body) });
+  if (!r.ok) { const e = new Error("GitHub write failed ("+r.status+")"); e.status = r.status; throw e; }
+  const j = await r.json();
+  return j.content.sha;
+}
+
+/* mutator(data) => {error:"…"} to abort, otherwise mutates in place */
+async function commit(mutator, okMsg, mailUrl){
+  for (let attempt = 0; attempt < 3; attempt++){
+    let latest;
+    try { latest = await ghGet(); }
+    catch(e){ toast("Sync failed — check connection.", null); return false; }
+    const res = mutator(latest.data);
+    if (res && res.error) { toast(res.error, null); return false; }
+    try {
+      const newSha = await ghPut(latest.data, latest.sha);
+      S.data = latest.data; S.sha = newSha;
+      renderAll();
+      toast(okMsg, mailUrl ? mailUrl(latest.data) : null);
+      return true;
+    } catch(e){
+      if (e.status === 409 || e.status === 422) continue; // sha conflict — retry on fresh copy
+      toast("Sync failed — check token/repo.", null); return false;
+    }
+  }
+  toast("Busy — someone else saved at the same time. Try again.", null);
+  return false;
+}
+
+async function refresh(show){
+  try {
+    const r = await ghGet();
+    S.data = r.data; S.sha = r.sha;
+    renderAll();
+    if (show) toast("Up to date.", null);
+  } catch(e){ if (show) toast("Refresh failed — check connection.", null); }
+}
+
+/* ================= availability ================= */
+function minAvailability(bookings, ci, co, total){
+  if (!ci || !co || co <= ci) return null;
+  let min = total;
+  for (let d = ci; d < co; d = addDays(d,1)){
+    const used = bookings.filter(b => b.status !== "Cancelled" && b.checkIn <= d && d < b.checkOut)
+                         .reduce((s,b) => s + Number(b.rooms||0), 0);
+    min = Math.min(min, total - used);
+  }
+  return min;
+}
+
+/* ================= report ================= */
+function computeReport(date, D){
+  const t = D.calls.filter(c => c.date === date);
+  const act = D.bookings.filter(b => b.status !== "Cancelled");
+  const pick = act.filter(b => b.dateBooked === date);
+  const month = date.slice(0,7);
+  const mtd = act.filter(b => b.dateBooked && b.dateBooked.slice(0,7) === month && b.dateBooked <= date);
+  const evA = D.beos.filter(e => e.status !== "Cancelled");
+  const evOn = evA.filter(e => e.eventDate === date);
+  const evBk = evA.filter(e => e.dateBooked === date);
+  const sum = (a,k) => a.reduce((s,x) => s + Number(x[k]||0), 0);
+  return {
+    touches:t.length,
+    calls:t.filter(c=>c.type==="Sales Call").length,
+    insp:t.filter(c=>c.type==="Site Inspection").length,
+    props:t.filter(c=>c.type==="Proposal Sent").length,
+    fuDone:D.fus.filter(f=>f.completed===date).length,
+    fuDueOpen:D.fus.filter(f=>f.due===date && !f.completed).length,
+    fuOver:D.fus.filter(f=>!f.completed && f.due && f.due<date).length,
+    issNew:D.issues.filter(i=>i.date===date).length,
+    issOpen:D.issues.filter(i=>i.status==="Open").length,
+    issHigh:D.issues.filter(i=>i.status==="Open" && i.severity==="High").length,
+    pkCount:pick.length, pkNights:sum(pick,"nights"), pkPax:sum(pick,"pax"), pkRev:sum(pick,"revenue"),
+    mtdNights:sum(mtd,"nights"), mtdRev:sum(mtd,"revenue"),
+    evOnCount:evOn.length, evOnPax:sum(evOn,"pax"), evOnRev:sum(evOn,"revenue"),
+    evBkCount:evBk.length, evBkRev:sum(evBk,"revenue"),
+  };
+}
+function reportText(date, D){
+  const r = computeReport(date, D);
+  return [
+    `DAILY SALES REPORT — ${date}`, `Titanic Hotel & SPA`, ``,
+    `ACTIVITY`, `Client touches: ${r.touches} (calls ${r.calls}, inspections ${r.insp}, proposals ${r.props})`, ``,
+    `FOLLOW-UPS`, `Completed: ${r.fuDone} · Due today open: ${r.fuDueOpen} · Overdue: ${r.fuOver}`, ``,
+    `ISSUES`, `New: ${r.issNew} · Open total: ${r.issOpen} (high: ${r.issHigh})`, ``,
+    `PICKUP (ROOMS)`, `Bookings: ${r.pkCount} · Room nights: ${r.pkNights} · Pax: ${r.pkPax} · Revenue: ${money(r.pkRev)}`,
+    `Month to date: ${r.mtdNights} nights · ${money(r.mtdRev)}`, ``,
+    `EVENTS (BEO)`, `On this day: ${r.evOnCount} · ${r.evOnPax} pax · ${money(r.evOnRev)}`,
+    `Booked this day: ${r.evBkCount} · ${money(r.evBkRev)}`, ``,
+    `Inventory: ${D.settings.totalRooms} rooms`,
+  ].join("\n");
+}
+
+/* ================= screens ================= */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
+  $(id).classList.add("on");
+}
+function saveToken(){
+  const o = $("tk-owner").value.trim(), r = $("tk-repo").value.trim(), t = $("tk-token").value.trim();
+  if (!o || !r || !t){ $("tk-err").style.display="block"; $("tk-err").textContent="Fill all three fields."; return; }
+  localStorage.setItem(LS.owner,o); localStorage.setItem(LS.repo,r); localStorage.setItem(LS.token,t);
+  boot();
+}
+function pickRole(role){
+  pendingRole = role;
+  $("si-reg").classList.toggle("on", role==="regular");
+  $("si-adm").classList.toggle("on", role==="admin");
+  $("si-banq").classList.toggle("on", role==="banquet");
+  $("si-pwlabel").textContent = role==="admin" ? "Admin password" : role==="banquet" ? "Banquet password" : "Team password";
+  $("si-err").style.display = "none";
+  applyRoleUI();
+}
+function signIn(){
+  const useSel = $("si-namesel").style.display !== "none";
+  const name = useSel ? $("si-namesel").value : $("si-name").value.trim();
+  const pw = $("si-pw").value.trim();
+  const errEl = $("si-err");
+  if (!name){ errEl.style.display="block"; errEl.textContent="Enter your name."; return; }
+  const expected = pendingRole==="admin" ? ADMIN_PASSWORD
+    : pendingRole==="banquet" ? (S.data.settings.banquetPassword || "banquet")
+    : (S.data.settings.teamPassword || "sozan");
+  if (pw !== expected){ errEl.style.display="block"; errEl.textContent="Wrong password."; return; }
+  const m = (S.data.settings.team || []).find((t) => t.name === name);
+  S.user = { name, position: m ? m.position : "", email: m ? m.email : "" };
+  S.role = pendingRole;
+  S.tab = pendingRole==="admin" ? "report" : pendingRole==="banquet" ? "beos" : "calls";
+  enterApp();
+}
+function signOut(){ S.user=null; show("screen-signin"); $("si-pw").value=""; refreshSignin(); }
+function disconnectRepo(){
+  if (!confirm("Remove the repo token from this device?")) return;
+  localStorage.removeItem(LS.token);
+  closeSettings(); S.user=null; boot();
+}
+
+/* ================= app render ================= */
+const isAdmin = () => S.role === "admin";
+const isBanquet = () => S.role === "banquet";
+
+function enterApp(){
+  show("screen-app");
+  const badge = isAdmin() ? "&#128274; Admin" : isBanquet() ? "Banquet" : "Sales team";
+  $("hdr-sub").innerHTML = `${todayISO()} · ${esc(S.user.name)} <span style="color:${isAdmin()?"var(--brass)":"#94A3B8"};font-weight:700;">${badge}</span>`;
+  $("btn-settings").style.display = isAdmin() ? "" : "none";
+  $("beo-form-card").style.display = isBanquet() ? "none" : "";
+  buildNav();
+  prefillForms();
+  setTab(S.tab);
+}
+function buildNav(){
+  const tabs = isBanquet()
+    ? [["beos","&#127869;","Events"]]
+    : [
+      ...(isAdmin() ? [["report","&#128203;","Report"]] : []),
+      ["calls","&#128222;","Calls"], ["fus","&#128276;","Follow-ups"],
+      ["issues","&#9888;","Issues"], ["bookings","&#128716;","Rooms"], ["beos","&#127869;","Events"],
+    ];
+  $("nav-in").innerHTML = tabs.map(([id,ic,lb]) =>
+    `<button id="nav-${id}" onclick="setTab('${id}')"><span class="ic">${ic}</span>${lb}</button>`).join("");
+}
+function setTab(id){
+  if (isBanquet()) id = "beos";
+  else if (id === "report" && !isAdmin()) id = "calls";
+  S.tab = id;
+  ["report","calls","fus","issues","bookings","beos"].forEach(t => {
+    const pane = $("tab-"+t); if (pane) pane.style.display = t===id ? "" : "none";
+    const nb = $("nav-"+t); if (nb) nb.classList.toggle("on", t===id);
+  });
+  renderAll();
+}
+function fillSelect(id, opts){ $(id).innerHTML = opts.map(o=>`<option>${esc(o)}</option>`).join(""); }
+function prefillForms(){
+  fillSelect("c-type", CALL_TYPES); fillSelect("c-outcome", OUTCOMES);
+  fillSelect("i-cat", ISSUE_CATS); fillSelect("i-sev", SEVERITIES); $("i-sev").value="Medium";
+  fillSelect("b-seg", SEGMENTS); fillSelect("e-type", EVENT_TYPES);
+  fillSelect("b-rtype", ROOM_TYPES); fillSelect("b-pay", PAY_TERMS);
+  $("c-date").value = todayISO(); $("c-sp").value = S.user.name;
+  $("f-owner").value = S.user.name; $("f-due").value = todayISO();
+  $("b-booked").value = todayISO(); $("b-sp").value = S.user.name;
+  $("b-ci").value = todayISO(); $("b-co").value = addDays(todayISO(),1);
+  $("e-date").value = todayISO(); $("e-booked").value = todayISO();
+  $("rp-date").value = todayISO();
+}
+
+function chip(txt, cls){ return `<span class="chip ${cls}">${esc(txt)}</span>`; }
+function binBtn(kind, id){
+  return isAdmin() ? `<button class="bin" title="Delete" onclick="delEntry('${kind}','${id}')">&#128465;</button>` : "";
+}
+
+function renderAll(){
+  if (!S.user) return;
+  renderReport(); renderCalls(); renderFus(); renderIssues(); renderBookings(); renderBeos(); renderMeter(); renderBeoSum();
+  const c = cfg();
+  $("sync-note").textContent = `Synced to ${c.owner}/${c.repo} (private) · ${DATA_PATH}`;
+}
+
+function renderReport(){
+  if (!isAdmin()) return;
+  const date = $("rp-date").value || todayISO();
+  const r = computeReport(date, S.data);
+  $("rp-title").textContent = "Day Register — " + date;
+  $("rp-mail").href = mailto(S.data.settings.managerEmail, `Daily Sales Report — ${date} — Titanic Hotel & SPA`, withSig(S.data.settings, reportText(date, S.data)));
+  const kv = (k,v,st) => `<div class="kv ${st?"strong":""}"><span>${k}</span><span>${v}</span></div>`;
+  $("rp-body").innerHTML =
+    `<div class="sec"><div class="st">Activity</div>${kv("Client touches",r.touches)}${kv("Sales calls",r.calls)}${kv("Site inspections",r.insp)}${kv("Proposals sent",r.props)}</div>`+
+    `<div class="sec"><div class="st">Follow-ups</div>${kv("Completed",r.fuDone)}${kv("Due, still open",r.fuDueOpen)}${kv("Overdue (as of this date)",r.fuOver,1)}</div>`+
+    `<div class="sec"><div class="st">Issues</div>${kv("Logged this day",r.issNew)}${kv("Open now",r.issOpen,1)}${kv("Open · high severity",r.issHigh,1)}</div>`+
+    `<div class="sec"><div class="st">Pickup — rooms</div>${kv("Bookings logged",r.pkCount)}${kv("Room nights",r.pkNights)}${kv("Guests (pax)",r.pkPax)}${kv("Revenue",money(r.pkRev),1)}${kv("Month to date",`${r.mtdNights} nights · ${money(r.mtdRev)}`)}</div>`+
+    `<div class="sec"><div class="st">Events (BEO)</div>${kv("Happening this day",`${r.evOnCount} · ${r.evOnPax} pax · ${money(r.evOnRev)}`,1)}${kv("Booked this day",`${r.evBkCount} · ${money(r.evBkRev)}`)}</div>`;
+}
+
+function listWrap(id, rowsHtml, empty){
+  $(id).innerHTML = rowsHtml.length
+    ? rowsHtml.map(h => `<div class="card">${h}</div>`).join("")
+    : `<div class="muted" style="text-align:center;padding:20px 0;">${empty}</div>`;
+}
+
+function renderCalls(){
+  const rows = [...S.data.calls].reverse().map(c => `
+    <div class="entry"><div class="grow">
+      <div class="l1">${esc(c.account)}</div>
+      <div class="l2">${esc(c.type)} · ${esc(c.outcome)}</div>
+      <div class="l3">${esc(c.date)} · ${esc(c.salesperson||"—")}${c.notes?" · "+esc(c.notes):""}</div>
+    </div><div class="acts">${binBtn("calls",c.id)}</div></div>`);
+  listWrap("list-calls", rows, "No client touches yet. Log the first call above.");
+}
+
+function renderFus(){
+  const today = todayISO();
+  const rows = [...S.data.fus].reverse().map(x => {
+    const st = x.completed ? ["Done","c-green"] : (x.due < today ? ["Overdue","c-red"] : ["Open","c-amber"]);
+    return `
+    <div class="entry"><div class="grow">
+      <div class="l1">${esc(x.account)} ${chip(st[0],st[1])}</div>
+      <div class="l2">${esc(x.action)}</div>
+      <div class="l3">Due ${esc(x.due)} · ${esc(x.owner||"—")}${x.completed?` · done ${esc(x.completed)}`:""}</div>
+    </div><div class="acts">
+      ${x.completed?"":`<button class="mini" onclick="fuDone('${x.id}')">Mark done</button>`}
+      ${binBtn("fus",x.id)}
+    </div></div>`;
+  });
+  listWrap("list-fus", rows, "Nothing pending. Log a follow-up above.");
+}
+
+function renderIssues(){
+  const rows = [...S.data.issues].reverse().map(x => {
+    const c = x.status==="Open" ? (x.severity==="High"?["Open · High","c-red"]:[`Open · ${x.severity}`,"c-amber"]) : ["Resolved","c-green"];
+    return `
+    <div class="entry"><div class="grow">
+      <div class="l1">${esc(x.account)} ${chip(c[0],c[1])}</div>
+      <div class="l2">${esc(x.category)}: ${esc(x.desc)}</div>
+      <div class="l3">${esc(x.date)}${x.resolved?` · resolved ${esc(x.resolved)}`:""}</div>
+    </div><div class="acts">
+      ${x.status==="Open"?`<button class="mini" onclick="issResolve('${x.id}')">Resolve</button>`:""}
+      ${binBtn("issues",x.id)}
+    </div></div>`;
+  });
+  listWrap("list-issues", rows, "No issues logged. Good day so far.");
+}
+
+function renderBookings(){
+  const rows = [...S.data.bookings].reverse().map(b => {
+    const c = b.status==="Definite"?["Definite","c-green"]:b.status==="Tentative"?["Tentative","c-amber"]:["Cancelled","c-red"];
+    return `
+    <div class="entry"><div class="grow">
+      <div class="l1">${esc(b.account)} ${chip(c[0],c[1])}</div>
+      <div class="l2">${esc(b.rooms)} rooms${b.roomType?" ("+esc(b.roomType)+")":""} · ${esc(b.pax||0)} pax · ${esc(b.checkIn)} → ${esc(b.checkOut)} · ${esc(b.nights)} nights · ${money(b.revenue)}</div>
+      <div class="l3">Booked ${esc(b.dateBooked)} · ${esc(b.segment)}${b.payment?" · "+esc(b.payment):""} · ${esc(b.salesperson||"—")}${b.notes?" · "+esc(b.notes):""}</div>
+    </div><div class="acts">
+      ${b.status==="Tentative"?`<button class="mini" onclick="bkConfirm('${b.id}')">Confirm</button>`:""}
+      ${isAdmin() && b.status!=="Cancelled"?`<button class="mini danger" onclick="bkCancel('${b.id}')">Cancel</button>`:""}
+      ${binBtn("bookings",b.id)}
+    </div></div>`;
+  });
+  listWrap("list-bookings", rows, "No bookings logged yet.");
+}
+
+const BEO_FIELDS = [["name","Name"],["account","Client"],["eventDate","Date"],["startTime","Start"],["endTime","End"],["venue","Venue"],["type","Type"],["pax","Pax"],["pricePax","Price/pax"],["notes","Notes"]];
+function beoDiffLines(e, pc){
+  const out = [];
+  for (const [k,label] of BEO_FIELDS){
+    const a = e[k] == null ? "" : String(e[k]);
+    const b = pc[k] == null ? "" : String(pc[k]);
+    if (a !== b) out.push(`${label}: ${a || "—"} → ${b || "—"}`);
+  }
+  return out.length ? out : ["(no field differences)"];
+}
+function renderBeos(){
+  const canReview = isAdmin() || isBanquet();
+  const canEdit = !isBanquet();
+  const rows = [...S.data.beos].reverse().map(e => {
+    const c = e.status==="Definite"?["Definite","c-green"]:e.status==="Tentative"?["Tentative","c-amber"]:["Cancelled","c-red"];
+    const pc = e.pendingChange;
+    let pcHtml = "";
+    if (pc){
+      pcHtml = `<div style="margin-top:8px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:9px;padding:9px 11px;font-size:12px;">
+        <b>Change requested</b> by ${esc(pc.requestedBy||"—")} · ${esc(pc.at||"")}<br>${beoDiffLines(e,pc).map(esc).join("<br>")}
+        ${canReview?`<div style="margin-top:7px;display:flex;gap:8px;">
+          <button class="mini" onclick="beoApprove('${e.id}')">Approve</button>
+          <button class="mini danger" onclick="beoReject('${e.id}')">Reject</button>
+        </div>`:""}
+      </div>`;
+    }
+    return `
+    <div class="entry"><div class="grow">
+      <div class="l1">${esc(e.name)} ${chip(c[0],c[1])}${pc?" "+chip("Change requested","c-amber"):""}</div>
+      <div class="l2">${esc(e.type)} · ${esc(e.eventDate)}${e.startTime?` · ${esc(e.startTime)}${e.endTime?"–"+esc(e.endTime):""}`:""}${e.venue?` · ${esc(e.venue)}`:""}</div>
+      <div class="l3">${esc(e.account||"—")} · ${esc(e.pax)} pax · ${money(e.revenue)}${e.notes?" · "+esc(e.notes):""}</div>
+      ${pcHtml}
+    </div><div class="acts">
+      ${e.status==="Tentative" && canEdit?`<button class="mini" onclick="beoConfirm('${e.id}')">Confirm</button>`:""}
+      ${canEdit?`<button class="mini" onclick="beoEdit('${e.id}')">Change</button>`:""}
+      ${binBtn("beos",e.id)}
+    </div></div>`;
+  });
+  listWrap("list-beos", rows, "No events yet." + (isBanquet() ? "" : " Log the first BEO above."));
+}
+
+function renderMeter(){
+  const ci=$("b-ci").value, co=$("b-co").value, total=Number(S.data.settings.totalRooms)||87;
+  const rooms=Number($("b-rooms").value)||0, adr=Number($("b-adr").value)||0;
+  const box=$("b-meter"), sum=$("b-sum");
+  if (!ci || !co || co<=ci){ box.innerHTML=""; sum.textContent=""; return; }
+  const avail = minAvailability(S.data.bookings, ci, co, total);
+  const over = rooms > avail;
+  const pct = Math.max(0, Math.min(100, (avail/total)*100));
+  box.innerHTML = `<div class="meter ${over?"bad":"ok"}">
+    <div class="top"><span>${over?"Overbooking blocked":"Availability"}</span><span>${Math.max(avail,0)} of ${total} rooms free</span></div>
+    <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+    <div class="muted" style="margin-top:5px;">Lowest availability across ${esc(ci)} → ${esc(co)}, counting Definite + Tentative logged here.</div>
+  </div>`;
+  const n = rooms * nightsBetween(ci,co);
+  sum.textContent = n>0 ? `${n} room nights · ${money(n*adr)}` : "";
+  $("b-save").disabled = over;
+  $("b-save").textContent = over ? "Exceeds available rooms" : "Save booking";
+}
+function renderBeoSum(){
+  const p=Number($("e-pax").value)||0, pr=Number($("e-price").value)||0;
+  $("e-sum").textContent = p>0 ? `${p} pax × ${money(pr)} → ${money(p*pr)}` : "";
+}
+
+/* ================= actions ================= */
+function saveCall(){
+  const e = { id:uid(), date:$("c-date").value, salesperson:$("c-sp").value.trim(),
+    account:$("c-account").value.trim(), contact:$("c-contact").value.trim(),
+    type:$("c-type").value, outcome:$("c-outcome").value, notes:$("c-notes").value.trim() };
+  if (!e.account || !e.date){ toast("Account and date are required.", null); return; }
+  const body = `SALES ACTIVITY — ${e.account}\n${e.type} · ${e.outcome}\nBy ${e.salesperson||"—"} on ${e.date}\n${e.notes}`;
+  commit(d => { d.calls.push(e); }, "Saved.",
+    d => mailto(d.settings.managerEmail, `Titanic Sales — ${e.type}: ${e.account}`, withSig(d.settings, body)))
+  .then(ok => { if (ok){ $("c-account").value=""; $("c-contact").value=""; $("c-notes").value=""; } });
+}
+function saveFu(){
+  const e = { id:uid(), date:todayISO(), account:$("f-account").value.trim(),
+    action:$("f-action").value.trim(), owner:$("f-owner").value.trim(), due:$("f-due").value, completed:"" };
+  if (!e.account || !e.action || !e.due){ toast("Account, action and due date are required.", null); return; }
+  const body = `FOLLOW-UP LOGGED — ${e.account}\nDue ${e.due}: ${e.action}\nOwner: ${e.owner||"—"}`;
+  commit(d => { d.fus.push(e); }, "Saved.",
+    d => mailto(d.settings.managerEmail, `Titanic Sales — follow-up: ${e.account}`, withSig(d.settings, body)))
+  .then(ok => { if (ok){ $("f-account").value=""; $("f-action").value=""; } });
+}
+function saveIssue(){
+  const e = { id:uid(), date:todayISO(), account:$("i-account").value.trim(),
+    category:$("i-cat").value, desc:$("i-desc").value.trim(), severity:$("i-sev").value, status:"Open", resolved:"" };
+  if (!e.account || !e.desc){ toast("Account and description are required.", null); return; }
+  const body = `ISSUE — ${e.category} (${e.severity})\n${e.account}\n${e.desc}\nLogged by ${S.user.name}`;
+  commit(d => { d.issues.push(e); }, "Saved.",
+    d => mailto(d.settings.managerEmail, `Titanic Sales — issue: ${e.account}`, withSig(d.settings, body)))
+  .then(ok => { if (ok){ $("i-account").value=""; $("i-desc").value=""; } });
+}
+function saveBooking(){
+  const ci=$("b-ci").value, co=$("b-co").value;
+  const rooms=Number($("b-rooms").value)||0, pax=Number($("b-pax").value)||0, adr=Number($("b-adr").value)||0;
+  const account=$("b-account").value.trim();
+  $("b-err").style.display="none";
+  if (!account || !ci || !co || co<=ci || rooms<1){ toast("Account, valid dates and rooms are required.", null); return; }
+  const nights = rooms * nightsBetween(ci,co);
+  const e = { id:uid(), dateBooked:$("b-booked").value, account, salesperson:$("b-sp").value.trim(),
+    rooms, pax, checkIn:ci, checkOut:co, adr, nights, revenue:nights*adr,
+    roomType:$("b-rtype").value, payment:$("b-pay").value, notes:$("b-notes").value.trim(),
+    spPosition:S.user.position || "", spEmail:S.user.email || "",
+    segment:$("b-seg").value, status:$("b-status").value };
+  const body = `NEW BOOKING — ${e.account}\n${rooms} rooms (${e.roomType}) · ${pax} pax · ${ci} → ${co} (${nights} room nights)\nADR ${money(adr)} → ${money(e.revenue)}\n${e.status} · ${e.segment} · ${e.payment}\nBy ${e.salesperson||"—"}${e.notes?`\nNotes: ${e.notes}`:""}`;
+  commit(d => {
+    const avail = minAvailability(d.bookings, ci, co, Number(d.settings.totalRooms)||87);
+    if (rooms > avail) return { error: `Blocked: only ${Math.max(avail,0)} room(s) left across ${ci} → ${co}.` };
+    d.bookings.push(e);
+  }, "Booking saved.",
+    d => mailto(d.settings.resTo || d.settings.managerEmail, `Titanic Sales — new booking: ${e.account}`, withSig(d.settings, body), d.settings.resCc))
+  .then(ok => { if (ok){ $("b-account").value=""; $("b-pax").value=""; $("b-adr").value=""; $("b-notes").value=""; renderMeter(); } });
+}
+let editingBeo = null;
+function saveBeo(){
+  const pax=Number($("e-pax").value)||0, price=Number($("e-price").value)||0;
+  const fields = { name:$("e-name").value.trim(), account:$("e-account").value.trim(),
+    eventDate:$("e-date").value, startTime:$("e-start").value, endTime:$("e-end").value,
+    venue:$("e-venue").value.trim(), type:$("e-type").value, pax, pricePax:price,
+    notes:$("e-notes").value.trim() };
+  if (!fields.name || !fields.eventDate || pax<1){ toast("Event name, date and pax are required.", null); return; }
+  if (editingBeo){
+    const id = editingBeo;
+    if (isAdmin()){
+      commit(d => { const x=d.beos.find(v=>v.id===id); if (!x) return {error:"Event no longer exists."};
+        Object.assign(x, fields, { revenue: pax*price }); delete x.pendingChange; },
+        "Event updated.", null).then(ok => { if (ok) beoEditCancel(); });
+    } else {
+      commit(d => { const x=d.beos.find(v=>v.id===id); if (!x) return {error:"Event no longer exists."};
+        x.pendingChange = { ...fields, requestedBy:S.user.name, at:todayISO() }; },
+        "Change request sent to banquet.", null).then(ok => { if (ok) beoEditCancel(); });
+    }
+    return;
+  }
+  const e = { id:uid(), dateBooked:$("e-booked").value, ...fields, revenue: pax*price,
+    status:$("e-status").value, salesperson:S.user.name };
+  const body = `NEW EVENT (BEO) — ${e.name}\n${e.account||"—"}\n${e.type} · ${e.eventDate}${e.startTime?` · ${e.startTime}${e.endTime?"–"+e.endTime:""}`:""}${e.venue?` · ${e.venue}`:""}\n${pax} pax × ${money(price)} → ${money(e.revenue)}\n${e.status} · by ${e.salesperson}${e.notes?"\n"+e.notes:""}`;
+  commit(d => { d.beos.push(e); }, "Event saved.",
+    d => mailto(d.settings.managerEmail, `Titanic Sales — new event: ${e.name}`, withSig(d.settings, body)))
+  .then(ok => { if (ok) beoEditCancel(); });
+}
+function beoEdit(id){
+  const e = S.data.beos.find(x=>x.id===id); if (!e) return;
+  editingBeo = id;
+  $("e-name").value=e.name||""; $("e-account").value=e.account||"";
+  $("e-date").value=e.eventDate||todayISO(); $("e-type").value=e.type||EVENT_TYPES[0];
+  $("e-start").value=e.startTime||""; $("e-end").value=e.endTime||"";
+  $("e-venue").value=e.venue||""; $("e-pax").value=e.pax||""; $("e-price").value=e.pricePax||"";
+  $("e-status").value=e.status||"Tentative"; $("e-booked").value=e.dateBooked||todayISO();
+  $("e-notes").value=e.notes||"";
+  $("beo-form-title").textContent = "Change event — " + (e.name || "");
+  $("beo-save-btn").textContent = isAdmin() ? "Apply changes" : "Send change request";
+  $("beo-cancel-edit").style.display = "";
+  renderBeoSum();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function beoEditCancel(){
+  editingBeo = null;
+  ["e-name","e-account","e-start","e-end","e-venue","e-pax","e-price","e-notes"].forEach(i => $(i).value="");
+  $("e-date").value = todayISO(); $("e-booked").value = todayISO();
+  $("beo-form-title").textContent = "Log an event (BEO)";
+  $("beo-save-btn").textContent = "Save event";
+  $("beo-cancel-edit").style.display = "none";
+  renderBeoSum();
+}
+function beoApprove(id){
+  if (!(isAdmin() || isBanquet())) return;
+  commit(d => { const x=d.beos.find(e=>e.id===id); if (!x || !x.pendingChange) return {error:"No pending change."};
+    const pc = x.pendingChange, p = Number(pc.pax)||0, pr = Number(pc.pricePax)||0;
+    Object.assign(x, { name:pc.name, account:pc.account, eventDate:pc.eventDate, startTime:pc.startTime,
+      endTime:pc.endTime, venue:pc.venue, type:pc.type, pax:p, pricePax:pr, notes:pc.notes, revenue:p*pr });
+    delete x.pendingChange; }, "Change approved.", null);
+}
+function beoReject(id){
+  if (!(isAdmin() || isBanquet())) return;
+  commit(d => { const x=d.beos.find(e=>e.id===id); if (x) delete x.pendingChange; }, "Change rejected.", null);
+}
+
+function fuDone(id){ commit(d => { const x=d.fus.find(f=>f.id===id); if (x) x.completed = todayISO(); }, "Marked done.", null); }
+function issResolve(id){ commit(d => { const x=d.issues.find(i=>i.id===id); if (x){ x.status="Resolved"; x.resolved=todayISO(); } }, "Resolved.", null); }
+function bkConfirm(id){ commit(d => { const x=d.bookings.find(b=>b.id===id); if (x) x.status="Definite"; }, "Confirmed.", null); }
+function bkCancel(id){
+  if (!isAdmin()) return;
+  if (!confirm("Cancel this booking? Its rooms return to availability.")) return;
+  commit(d => { const x=d.bookings.find(b=>b.id===id); if (x) x.status="Cancelled"; }, "Cancelled.", null);
+}
+function beoConfirm(id){ if (isBanquet()) return; commit(d => { const x=d.beos.find(e=>e.id===id); if (x) x.status="Definite"; }, "Confirmed.", null); }
+function delEntry(kind, id){
+  if (!isAdmin()) return;
+  if (!confirm("Delete this record? This cannot be undone.")) return;
+  commit(d => { d[kind] = d[kind].filter(x => x.id !== id); }, "Deleted.", null);
+}
+
+/* ================= settings ================= */
+function openSettings(){
+  if (!isAdmin()) return;
+  $("st-email").value = S.data.settings.managerEmail || "";
+  $("st-rooms").value = S.data.settings.totalRooms || 87;
+  $("st-teampw").value = S.data.settings.teamPassword || "sozan";
+  $("st-banqpw").value = S.data.settings.banquetPassword || "banquet";
+  $("st-resto").value = S.data.settings.resTo || "";
+  $("st-rescc").value = S.data.settings.resCc || "";
+  $("st-sig").value = S.data.settings.emailSig || "";
+  teamDraft = JSON.parse(JSON.stringify(S.data.settings.team || []));
+  renderTeam();
+  $("modal").style.display = "flex";
+}
+function closeSettings(){ $("modal").style.display = "none"; }
+function saveSettings(){
+  const email=$("st-email").value.trim(), rooms=Number($("st-rooms").value)||87;
+  const teampw=$("st-teampw").value.trim() || "sozan";
+  const banqpw=$("st-banqpw").value.trim() || "banquet";
+  const resTo=$("st-resto").value.trim(), resCc=$("st-rescc").value.trim();
+  const sig=$("st-sig").value.trim();
+  commit(d => { d.settings.managerEmail=email; d.settings.totalRooms=rooms; d.settings.teamPassword=teampw; d.settings.banquetPassword=banqpw; d.settings.resTo=resTo; d.settings.resCc=resCc; d.settings.emailSig=sig; d.settings.team=teamDraft; },
+    "Settings saved.", null).then(ok => { if (ok) closeSettings(); });
+}
+
+/* ================= team directory ================= */
+let teamDraft = [];
+function renderTeam(){
+  $("st-team").innerHTML = teamDraft.length
+    ? teamDraft.map((t,i) => `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:13px;">
+        <div style="flex:1;min-width:0;"><b>${esc(t.name)}</b> · ${esc(t.position||"—")}<br><span class="muted">${esc(t.email||"—")}</span></div>
+        <button class="bin" onclick="teamRemove(${i})">&#10005;</button></div>`).join("")
+    : '<div class="muted" style="padding:4px 0;">No members yet — add your salespeople below.</div>';
+}
+function teamAdd(){
+  const name=$("tm-name").value.trim(), pos=$("tm-pos").value.trim(), em=$("tm-email").value.trim();
+  if (!name) return;
+  teamDraft.push({ name, position:pos, email:em });
+  $("tm-name").value=""; $("tm-pos").value=""; $("tm-email").value="";
+  renderTeam();
+}
+function teamRemove(i){ teamDraft.splice(i,1); renderTeam(); }
+function refreshSignin(){
+  const team = (S.data.settings.team || []);
+  $("si-namesel").innerHTML = team.map((t) => `<option>${esc(t.name)}</option>`).join("");
+  $("si-banq").style.display = "";
+  $("si-seg").style.gridTemplateColumns = "1fr 1fr 1fr";
+  applyRoleUI();
+}
+function applyRoleUI(){
+  const team = (S.data.settings.team || []);
+  const useSel = pendingRole === "regular" && team.length > 0;
+  $("si-namesel").style.display = useSel ? "" : "none";
+  $("si-name").style.display = useSel ? "none" : "";
+}
+
+/* ================= toast ================= */
+let toastTimer = null;
+function toast(msg, mail){
+  $("toast-msg").textContent = msg;
+  const a = $("toast-mail");
+  if (mail){ a.href = mail; a.style.display=""; } else { a.style.display="none"; }
+  $("toast").style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 9000);
+}
+function hideToast(){ $("toast").style.display = "none"; }
+
+/* ================= boot ================= */
+async function boot(){
+  const c = cfg();
+  $("tk-owner").value = c.owner || "arosoran24-hash";
+  $("tk-repo").value = c.repo || "sales-data";
+  if (!c.token || !c.owner || !c.repo){ show("screen-token"); return; }
+  show("screen-signin");
+  try {
+    const r = await ghGet();
+    S.data = r.data; S.sha = r.sha;
+    refreshSignin();
+  } catch(e){
+    show("screen-token");
+    $("tk-err").style.display="block";
+    $("tk-err").textContent="Couldn't reach the repo — check owner, repo name and token.";
+    return;
+  }
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && S.user) refresh(false);
+});
+boot();
+</script>
+</body>
+</html>
