@@ -254,74 +254,6 @@
       <div class="muted">Overbooking is blocked against bookings logged here vs your room count. Front-desk and OTA bookings live in the PMS.</div>
     </div>
 
-    <!-- EVENTS / BEO -->
-    <div id="tab-beos" style="display:none;">
-      <div class="card" id="beo-form-card"><div class="pad">
-        <div class="h serif" id="beo-form-title">Book an event (BEO)</div>
-        <label>Event name</label><input id="e-name" placeholder="e.g. Annual dinner">
-        <label>Account / client</label><input id="e-account" placeholder="Company / organization">
-        <div class="row2">
-          <div><label>Contact person</label><input id="e-contact" placeholder="Name"></div>
-          <div><label>Contact phone</label><input id="e-phone" placeholder="07…"></div>
-        </div>
-        <div class="row2">
-          <div><label>Event date</label><input type="date" id="e-date"></div>
-          <div><label>Type</label><select id="e-type"></select></div>
-        </div>
-        <div class="row2">
-          <div><label>Start</label><input type="time" id="e-start"></div>
-          <div><label>End</label><input type="time" id="e-end"></div>
-        </div>
-        <div class="row2">
-          <div><label>Venue / hall</label><input id="e-venue" placeholder="Hall"></div>
-          <div><label>Setup style</label><select id="e-setup"></select></div>
-        </div>
-        <div class="row2">
-          <div><label>Guaranteed pax</label><input type="number" min="1" id="e-pax" oninput="renderBeoSum()"></div>
-          <div><label>Expected pax</label><input type="number" min="0" id="e-expected" placeholder="If different"></div>
-        </div>
-        <div class="row2">
-          <div><label>Price / pax ($)</label><input type="number" min="0" id="e-price" oninput="renderBeoSum()"></div>
-          <div><label>Deposit ($)</label><input type="number" min="0" id="e-deposit" placeholder="If taken"></div>
-        </div>
-        <label>Meals included</label>
-        <div style="display:flex;flex-wrap:wrap;gap:10px 14px;">
-          <label class="ck"><input type="checkbox" id="e-ml-bf">Breakfast</label>
-          <label class="ck"><input type="checkbox" id="e-ml-lu">Lunch</label>
-          <label class="ck"><input type="checkbox" id="e-ml-di">Dinner</label>
-          <label class="ck"><input type="checkbox" id="e-ml-ck">Cocktail</label>
-        </div>
-        <label>Coffee breaks (how many)</label><input type="number" min="0" max="6" id="e-cb" placeholder="0">
-        <label>Menu &amp; beverage</label><input id="e-menu" placeholder="Set menu / buffet, dishes, drinks package">
-        <label>Equipment &amp; AV</label>
-        <div style="display:flex;flex-wrap:wrap;gap:10px 14px;">
-          <label class="ck"><input type="checkbox" id="e-av-pj">Projector &amp; screen</label>
-          <label class="ck"><input type="checkbox" id="e-av-sd">Sound system</label>
-          <label class="ck"><input type="checkbox" id="e-av-mc">Microphone</label>
-          <label class="ck"><input type="checkbox" id="e-av-st">Stage</label>
-          <label class="ck"><input type="checkbox" id="e-av-fc">Flipchart</label>
-        </div>
-        <div class="row2">
-          <div><label>Payment terms</label><select id="e-payterms"></select></div>
-          <div><label>Final numbers by</label><input type="date" id="e-cutoff"></div>
-        </div>
-        <div class="row2">
-          <div><label>Status</label><select id="e-status"><option>Tentative</option><option>Definite</option></select></div>
-          <div><label>Booked on</label><input type="date" id="e-booked"></div>
-        </div>
-        <label>Decor / special requests / notes</label><input id="e-notes" placeholder="Flowers, seating plan, cake, flags…">
-        <div id="e-sum" class="muted" style="margin-top:8px;"></div>
-        <button class="btn" id="beo-save-btn" onclick="saveBeo()">Save event</button>
-        <button class="btn navy" id="beo-cancel-edit" style="display:none;" onclick="beoEditCancel()">Cancel change</button>
-      </div></div>
-      <div class="seg" id="beo-seg" style="margin-bottom:8px;grid-template-columns:1fr 1fr 1fr;">
-        <button id="beo-vw-book" onclick="beoSetView('book')">Book</button>
-        <button id="beo-vw-timetable" class="on" onclick="beoSetView('timetable')">Timetable</button>
-        <button id="beo-vw-past" onclick="beoSetView('past')">Past</button>
-      </div>
-      <div id="list-beos"></div>
-    </div>
-
     <!-- MAINTENANCE ORDERS -->
     <div id="tab-morders" style="display:none;">
       <div class="card" id="mo-form-card"><div class="pad">
@@ -426,8 +358,6 @@
   <input id="st-rooms" type="number" min="1">
   <label>Sales team password</label>
   <input id="st-teampw" placeholder="sozan">
-  <label>Banquet password</label>
-  <input id="st-banqpw" placeholder="banquet">
   <label>Reception password</label>
   <input id="st-receppw" placeholder="reception">
   <label>Maintenance password</label>
@@ -452,6 +382,15 @@
     <input id="tm-email" placeholder="email@…">
   </div>
   <button class="btn navy" onclick="teamAdd()">Add member</button>
+  <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--rule);">
+    <div class="h serif" style="margin:0 0 6px;">Storage &amp; archive</div>
+    <div id="arc-rows"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+      <button class="btn" id="arc-btn" style="margin:0;flex:1;" onclick="runArchive()">Archive selected</button>
+      <div id="arc-size" style="min-width:118px;text-align:right;"></div>
+    </div>
+    <div class="muted" id="arc-note" style="margin-top:8px;">Moved rows go to a dated file under archive/ in the same private repo &mdash; nothing is deleted. Open follow-ups, open issues and POs still mid-approval never archive.</div>
+  </div>
   <div class="muted" style="margin-top:10px;">Data is shared through the private repo — everyone with the app and token sees the same logs.</div>
   <button class="btn" onclick="saveSettings()">Save settings</button>
   <button class="btn navy" onclick="disconnectRepo()">Disconnect repo on this device</button>
@@ -471,20 +410,17 @@ const ROOM_TYPES = ["DR","SR","DS","FS","EX"];
 const PAY_TERMS = ["On Account","BO","BB","HB","FB","AI"];
 const ISSUE_CATS = ["Rate","Billing","Service","Availability","Competitor","Internal","Other"];
 const SEVERITIES = ["Low","Medium","High"];
-const EVENT_TYPES = ["Dinner / Gala","Conference / Meeting","Wedding","Workshop / Training","Cocktail / Reception","Other"];
 const PRIORITIES = ["Low","Medium","High"];
 const PLAIN_DEPTS = ["IT","F&B","Housekeeping","Kitchen","Engineering","Security","HR","Spa"];
 const CURS = ["$","IQD"];
-const SETUPS = ["Banquet rounds","Theater","Classroom","U-shape","Boardroom","Cocktail / standing","Custom"];
-const EVENT_PAY = ["On Account","Deposit + balance","Full prepayment","Pay on day"];
 const LOGIN_OPTIONS = [
-  ["regular","Sales team"],["admin","Admin (GM)"],["banquet","Banquet"],["reception","Reception / Front Office"],
+  ["regular","Sales team"],["admin","Admin (GM)"],["reception","Reception / Front Office"],
   ["maintenance","Maintenance"],["purchasing","Purchasing"],["accounting","Accounting"],
   ...PLAIN_DEPTS.map(d => ["dept:"+d, d]),
 ];
 
 const DEFAULT_DATA = { calls:[], fus:[], issues:[], bookings:[], beos:[], morders:[], pos:[],
-  settings:{ managerEmail:"", totalRooms:87, teamPassword:"sozan", banquetPassword:"banquet", receptionPassword:"reception", maintenancePassword:"maintenance", purchasingPassword:"purchasing", accountingPassword:"accounting", deptPassword:"titanic",
+  settings:{ managerEmail:"", totalRooms:87, teamPassword:"sozan", receptionPassword:"reception", maintenancePassword:"maintenance", purchasingPassword:"purchasing", accountingPassword:"accounting", deptPassword:"titanic",
     resTo:"reservations@titanichotel-sul.com",
     resCc:"gm@titanichotel-sul.com,arosoran24@gmail.com,accounting@titanichotel-sul.com",
     emailSig:"", team:[
@@ -493,7 +429,7 @@ const DEFAULT_DATA = { calls:[], fus:[], issues:[], bookings:[], beos:[], morder
     ] } };
 
 /* ================= state ================= */
-let S = { data: structuredClone(DEFAULT_DATA), sha: null, user: null, tab: "calls", role: "regular" };
+let S = { data: structuredClone(DEFAULT_DATA), sha: null, user: null, tab: "calls", role: "regular", fileSize: 0 };
 let pendingRole = "regular";
 
 /* ================= helpers ================= */
@@ -537,7 +473,7 @@ async function ghGet(){
   for (const k of ["calls","fus","issues","bookings","beos","morders","pos"]) if (!Array.isArray(data[k])) data[k] = [];
   data.settings = Object.assign(structuredClone(DEFAULT_DATA.settings), data.settings || {});
   if (!Array.isArray(data.settings.team) || data.settings.team.length === 0) data.settings.team = structuredClone(DEFAULT_DATA.settings.team);
-  return { data, sha: j.sha };
+  return { data, sha: j.sha, size: j.size || 0 };
 }
 
 async function ghPut(data, sha){
@@ -575,7 +511,7 @@ async function commit(mutator, okMsg, mailUrl){
     if (res && res.error) { toast(res.error, null); return false; }
     try {
       const newSha = await ghPut(latest.data, latest.sha);
-      S.data = latest.data; S.sha = newSha;
+      S.data = latest.data; S.sha = newSha; S.fileSize = JSON.stringify(latest.data, null, 1).length;
       renderAll();
       toast(okMsg, mailUrl ? mailUrl(latest.data) : null);
       return true;
@@ -591,7 +527,7 @@ async function commit(mutator, okMsg, mailUrl){
 async function refresh(show){
   try {
     const r = await ghGet();
-    S.data = r.data; S.sha = r.sha;
+    S.data = r.data; S.sha = r.sha; if (r.size) S.fileSize = r.size;
     renderAll();
     if (show) toast("Up to date.", null);
   } catch(e){ if (show) toast("Refresh failed — check connection.", null); }
@@ -616,9 +552,6 @@ function computeReport(date, D){
   const pick = act.filter(b => b.dateBooked === date);
   const month = date.slice(0,7);
   const mtd = act.filter(b => b.dateBooked && b.dateBooked.slice(0,7) === month && b.dateBooked <= date);
-  const evA = D.beos.filter(e => e.status !== "Cancelled");
-  const evOn = evA.filter(e => e.eventDate === date);
-  const evBk = evA.filter(e => e.dateBooked === date);
   const sum = (a,k) => a.reduce((s,x) => s + Number(x[k]||0), 0);
   return {
     touches:t.length,
@@ -633,8 +566,6 @@ function computeReport(date, D){
     issHigh:D.issues.filter(i=>i.status==="Open" && i.severity==="High").length,
     pkCount:pick.length, pkNights:sum(pick,"nights"), pkPax:sum(pick,"pax"), pkRev:sum(pick,"revenue"), pkRevIQD:sum(pick,"revenueIQD"),
     mtdNights:sum(mtd,"nights"), mtdRev:sum(mtd,"revenue"), mtdRevIQD:sum(mtd,"revenueIQD"),
-    evOnCount:evOn.length, evOnPax:sum(evOn,"pax"), evOnRev:sum(evOn,"revenue"),
-    evBkCount:evBk.length, evBkRev:sum(evBk,"revenue"),
   };
 }
 function reportText(date, D){
@@ -646,8 +577,6 @@ function reportText(date, D){
     `ISSUES`, `New: ${r.issNew} · Open total: ${r.issOpen} (high: ${r.issHigh})`, ``,
     `PICKUP (ROOMS)`, `Bookings: ${r.pkCount} · Room nights: ${r.pkNights} · Pax: ${r.pkPax} · Revenue: ${revParts(r.pkRev, r.pkRevIQD)}`,
     `Month to date: ${r.mtdNights} nights · ${revParts(r.mtdRev, r.mtdRevIQD)}`, ``,
-    `EVENTS (BEO)`, `On this day: ${r.evOnCount} · ${r.evOnPax} pax · ${money(r.evOnRev)}`,
-    `Booked this day: ${r.evBkCount} · ${money(r.evBkRev)}`, ``,
     `Inventory: ${D.settings.totalRooms} rooms`,
   ].join("\n");
 }
@@ -665,7 +594,7 @@ function saveToken(){
 }
 function pickRole(role){
   pendingRole = role;
-  const labels = { admin:"Admin password", banquet:"Banquet password", reception:"Reception password",
+  const labels = { admin:"Admin password", reception:"Reception password",
     maintenance:"Maintenance password", purchasing:"Purchasing password", accounting:"Accounting password",
     regular:"Team password" };
   $("si-pwlabel").textContent = role.startsWith("dept:") ? "Department password" : (labels[role] || "Password");
@@ -680,7 +609,6 @@ function signIn(){
   if (!name){ errEl.style.display="block"; errEl.textContent="Enter your name."; return; }
   const st = S.data.settings;
   const expected = pendingRole==="admin" ? ADMIN_PASSWORD
-    : pendingRole==="banquet" ? (st.banquetPassword || "banquet")
     : pendingRole==="reception" ? (st.receptionPassword || "reception")
     : pendingRole==="maintenance" ? (st.maintenancePassword || "maintenance")
     : pendingRole==="purchasing" ? (st.purchasingPassword || "purchasing")
@@ -692,7 +620,7 @@ function signIn(){
   S.user = { name, position: m ? m.position : "", email: m ? m.email : "" };
   S.role = pendingRole.startsWith("dept:") ? "dept" : pendingRole;
   S.dept = pendingRole.startsWith("dept:") ? pendingRole.slice(5) : "";
-  S.tab = S.role==="admin" ? "report" : S.role==="banquet" ? "beos" : S.role==="reception" ? "bookings"
+  S.tab = S.role==="admin" ? "report" : S.role==="reception" ? "bookings"
     : S.role==="maintenance" ? "morders" : (S.role==="purchasing" || S.role==="accounting") ? "pos"
     : S.role==="dept" ? "morders" : "calls";
   enterApp();
@@ -706,34 +634,31 @@ function disconnectRepo(){
 
 /* ================= app render ================= */
 const isAdmin = () => S.role === "admin";
-const isBanquet = () => S.role === "banquet";
 const isReception = () => S.role === "reception";
 const isMaint = () => S.role === "maintenance";
 const isPurch = () => S.role === "purchasing";
 const isAcct = () => S.role === "accounting";
 const myDept = () => S.role === "dept" ? S.dept
-  : S.role === "regular" ? "Sales" : S.role === "banquet" ? "Banquet"
+  : S.role === "regular" ? "Sales"
   : S.role === "reception" ? "Reception" : S.role === "maintenance" ? "Maintenance"
   : S.role === "purchasing" ? "Purchasing" : S.role === "accounting" ? "Accounting" : "Management";
 
 function enterApp(){
   show("screen-app");
-  const badges = { admin:"&#128274; Admin (GM)", banquet:"Banquet", reception:"Reception",
+  const badges = { admin:"&#128274; Admin (GM)", reception:"Reception",
     maintenance:"Maintenance", purchasing:"Purchasing", accounting:"Accounting", dept:esc(S.dept), regular:"Sales team" };
   $("hdr-sub").innerHTML = `${todayISO()} · ${esc(S.user.name)} <span style="color:${isAdmin()?"var(--brass)":"#94A3B8"};font-weight:700;">${badges[S.role]||""}</span>`;
   $("btn-settings").style.display = isAdmin() ? "" : "none";
   bkLines = [bkBlankLine()]; renderBkLines();
   poItems = [poBlankItem()]; renderPoItems();
-  beoSetView(isBanquet() ? "timetable" : "timetable");
   $("bk-form-card").style.display = isReception() ? "none" : "";
   buildNav();
   prefillForms();
   setTab(S.tab);
 }
 const TABSETS = {
-  admin: ["report","calls","fus","issues","bookings","beos","morders","pos","invs"],
-  regular: ["calls","fus","issues","bookings","beos","morders","pos"],
-  banquet: ["beos"],
+  admin: ["report","calls","fus","issues","bookings","morders","pos","invs"],
+  regular: ["calls","fus","issues","bookings","morders","pos"],
   reception: ["bookings","morders","pos"],
   maintenance: ["morders","pos"],
   purchasing: ["pos","morders"],
@@ -742,7 +667,7 @@ const TABSETS = {
 };
 const TABDEFS = {
   report:["&#128203;","Report"], calls:["&#128222;","Calls"], fus:["&#128276;","Follow-ups"],
-  issues:["&#9888;","Issues"], bookings:["&#128716;","Rooms"], beos:["&#127869;","Events"],
+  issues:["&#9888;","Issues"], bookings:["&#128716;","Rooms"],
   morders:["&#128295;","Maint."], pos:["&#128722;","PO"], invs:["&#129534;","Invoices"],
 };
 function buildNav(){
@@ -755,7 +680,7 @@ function setTab(id){
   const allowed = TABSETS[S.role] || ["morders","pos"];
   if (!allowed.includes(id)) id = allowed[0];
   S.tab = id;
-  ["report","calls","fus","issues","bookings","beos","morders","pos","invs"].forEach(t => {
+  ["report","calls","fus","issues","bookings","morders","pos","invs"].forEach(t => {
     const pane = $("tab-"+t); if (pane) pane.style.display = t===id ? "" : "none";
     const nb = $("nav-"+t); if (nb) nb.classList.toggle("on", t===id);
   });
@@ -765,8 +690,7 @@ function fillSelect(id, opts){ $(id).innerHTML = opts.map(o=>`<option>${esc(o)}<
 function prefillForms(){
   fillSelect("c-type", CALL_TYPES); fillSelect("c-outcome", OUTCOMES);
   fillSelect("i-cat", ISSUE_CATS); fillSelect("i-sev", SEVERITIES); $("i-sev").value="Medium";
-  fillSelect("b-seg", SEGMENTS); fillSelect("e-type", EVENT_TYPES);
-  fillSelect("e-setup", SETUPS); fillSelect("e-payterms", EVENT_PAY);
+  fillSelect("b-seg", SEGMENTS);
   fillSelect("mo-pri", PRIORITIES); $("mo-pri").value = "Medium";
   fillSelect("po-pri", PRIORITIES); $("po-pri").value = "Medium";
   $("mo-dept-label").textContent = myDept();
@@ -777,7 +701,6 @@ function prefillForms(){
   $("f-owner").value = S.user.name; $("f-due").value = todayISO();
   $("b-booked").value = todayISO(); $("b-sp").value = S.user.name;
   $("b-ci").value = todayISO(); $("b-co").value = addDays(todayISO(),1);
-  $("e-date").value = todayISO(); $("e-booked").value = todayISO();
   $("rp-date").value = todayISO();
 }
 
@@ -788,7 +711,7 @@ function binBtn(kind, id){
 
 function renderAll(){
   if (!S.user) return;
-  renderReport(); renderCalls(); renderFus(); renderIssues(); renderBookings(); renderBeos(); renderMorders(); renderPos(); renderInvs(); renderMeter(); renderBeoSum();
+  renderReport(); renderCalls(); renderFus(); renderIssues(); renderBookings(); renderMorders(); renderPos(); renderInvs(); renderMeter();
   const c = cfg();
   $("sync-note").textContent = `Synced to ${c.owner}/${c.repo} (private) · ${DATA_PATH}`;
 }
@@ -1057,8 +980,7 @@ function renderReport(){
     `<div class="sec"><div class="st">Activity</div>${kv("Client touches",r.touches)}${kv("Sales calls",r.calls)}${kv("Site inspections",r.insp)}${kv("Proposals sent",r.props)}</div>`+
     `<div class="sec"><div class="st">Follow-ups</div>${kv("Completed",r.fuDone)}${kv("Due, still open",r.fuDueOpen)}${kv("Overdue (as of this date)",r.fuOver,1)}</div>`+
     `<div class="sec"><div class="st">Issues</div>${kv("Logged this day",r.issNew)}${kv("Open now",r.issOpen,1)}${kv("Open · high severity",r.issHigh,1)}</div>`+
-    `<div class="sec"><div class="st">Pickup — rooms</div>${kv("Bookings logged",r.pkCount)}${kv("Room nights",r.pkNights)}${kv("Guests (pax)",r.pkPax)}${kv("Revenue",revParts(r.pkRev,r.pkRevIQD),1)}${kv("Month to date",`${r.mtdNights} nights · ${revParts(r.mtdRev,r.mtdRevIQD)}`)}</div>`+
-    `<div class="sec"><div class="st">Events (BEO)</div>${kv("Happening this day",`${r.evOnCount} · ${r.evOnPax} pax · ${money(r.evOnRev)}`,1)}${kv("Booked this day",`${r.evBkCount} · ${money(r.evBkRev)}`)}</div>`;
+    `<div class="sec"><div class="st">Pickup — rooms</div>${kv("Bookings logged",r.pkCount)}${kv("Room nights",r.pkNights)}${kv("Guests (pax)",r.pkPax)}${kv("Revenue",revParts(r.pkRev,r.pkRevIQD),1)}${kv("Month to date",`${r.mtdNights} nights · ${revParts(r.mtdRev,r.mtdRevIQD)}`)}</div>`;
 }
 
 function listWrap(id, rowsHtml, empty){
@@ -1130,61 +1052,6 @@ function renderBookings(){
   listWrap("list-bookings", rows, "No bookings logged yet.");
 }
 
-function beoCard(e){
-  const canEdit = !isBanquet();
-  const c = e.status==="Definite"?["Definite","c-green"]:e.status==="Tentative"?["Tentative","c-amber"]:["Cancelled","c-red"];
-  const fb = [...(e.meals||[]), e.coffeeBreaks?`${e.coffeeBreaks}\u00d7 coffee break`:""].filter(Boolean).join(", ");
-  const extra = [
-    fb ? "F&B: " + esc(fb) : "",
-    e.menu ? "Menu: " + esc(e.menu) : "",
-    (e.av||[]).length ? "AV: " + esc(e.av.join(", ")) : "",
-    e.payTerms ? esc(e.payTerms) : "",
-    e.deposit ? "Deposit " + money(e.deposit) : "",
-    e.cutoff ? "Final numbers by " + esc(e.cutoff) : "",
-    e.contact ? "Contact: " + esc(e.contact) + (e.phone?" "+esc(e.phone):"") : "",
-  ].filter(Boolean).join(" \u00b7 ");
-  return `
-  <div class="entry"><div class="grow">
-    <div class="l1">${esc(e.name)} ${chip(c[0],c[1])}</div>
-    <div class="l2">${esc(e.type)} \u00b7 ${esc(e.eventDate)}${e.startTime?` \u00b7 ${esc(e.startTime)}${e.endTime?"\u2013"+esc(e.endTime):""}`:""}${e.venue?` \u00b7 ${esc(e.venue)}`:""}${e.setup?` \u00b7 ${esc(e.setup)}`:""}</div>
-    <div class="l3">${esc(e.account||"\u2014")} \u00b7 ${esc(e.pax)} pax${e.expectedPax?` (exp ${esc(e.expectedPax)})`:""} \u00b7 ${fmtCur(e.cur||"$", e.revenue)}${e.notes?" \u00b7 "+esc(e.notes):""}</div>
-    ${extra?`<div style="margin-top:4px;font-size:12px;color:#334155;">${extra}</div>`:""}
-  </div><div class="acts">
-    ${e.status==="Tentative" && canEdit?`<button class="mini" onclick="beoConfirm('${e.id}')">Confirm</button>`:""}
-    ${canEdit?`<button class="mini" onclick="beoEdit('${e.id}')">Change</button>`:""}
-    ${binBtn("beos",e.id)}
-  </div></div>`;
-}
-function renderBeos(){
-  if (!$("list-beos")) return;
-  if (isBanquet()){ $("beo-vw-book").style.display = "none"; $("beo-seg").style.gridTemplateColumns = "1fr 1fr"; if (beoView==="book") beoView="timetable"; }
-  const today = todayISO();
-  const key = (e) => (e.eventDate||"") + " " + (e.startTime||"");
-  let out = "";
-  if (beoView === "past"){
-    const src = S.data.beos.filter(e => e.eventDate && e.eventDate < today)
-      .sort((a,b) => key(b).localeCompare(key(a)));
-    out = src.map(e => `<div class="card">${beoCard(e)}</div>`).join("")
-      || `<div class="muted" style="text-align:center;padding:20px 0;">No past events yet.</div>`;
-  } else if (beoView === "timetable"){
-    const src = S.data.beos.filter(e => e.eventDate && e.eventDate >= today && e.status !== "Cancelled")
-      .sort((a,b) => key(a).localeCompare(key(b)));
-    let lastDate = "";
-    for (const e of src){
-      if (e.eventDate !== lastDate){
-        lastDate = e.eventDate;
-        out += `<div style="margin:12px 2px 5px;font-weight:800;color:var(--brass-dark);font-size:12px;letter-spacing:.08em;">${esc(e.eventDate)}${e.eventDate===today?" \u2014 TODAY":""}</div>`;
-      }
-      out += `<div class="card">${beoCard(e)}</div>`;
-    }
-    if (!src.length) out = `<div class="muted" style="text-align:center;padding:20px 0;">Nothing on the timetable \u2014 no events today or ahead.</div>`;
-  } else {
-    const src = [...S.data.beos].reverse();
-    out = src.map(e => `<div class="card">${beoCard(e)}</div>`).join("")
-      || `<div class="muted" style="text-align:center;padding:20px 0;">No events yet. Book the first one above.</div>`;
-  }
-  $("list-beos").innerHTML = out;
-}
 
 let bkLines = [];
 function bkBlankLine(){ return { type: ROOM_TYPES[0], pax: "", adr: "", cur: "$", pay: PAY_TERMS[0] }; }
@@ -1242,10 +1109,6 @@ function renderMeter(){
   renderBkSummary();
   $("b-save").disabled = over;
   $("b-save").textContent = over ? "Exceeds available rooms" : "Save booking";
-}
-function renderBeoSum(){
-  const p=Number($("e-pax").value)||0, pr=Number($("e-price").value)||0;
-  $("e-sum").textContent = p>0 ? `${p} pax × ${money(pr)} → ${money(p*pr)}` : "";
 }
 
 /* ================= actions ================= */
@@ -1305,79 +1168,6 @@ function saveBooking(){
     d => mailto(d.settings.resTo || d.settings.managerEmail, `Titanic Sales \u2014 new booking: ${e.account}`, withSig(d.settings, body)))
   .then(ok => { if (ok){ $("b-account").value=""; $("b-notes").value=""; bkLines=[bkBlankLine()]; renderBkLines(); } });
 }
-let beoView = "timetable";
-function beoSetView(v){
-  beoView = v;
-  ["book","timetable","past"].forEach(k => $("beo-vw-"+k).classList.toggle("on", k===v));
-  $("beo-form-card").style.display = (v === "book" && !isBanquet()) ? "" : "none";
-  renderBeos();
-}
-const MEAL_IDS = [["e-ml-bf","Breakfast"],["e-ml-lu","Lunch"],["e-ml-di","Dinner"],["e-ml-ck","Cocktail"]];
-const AV_IDS = [["e-av-pj","Projector & screen"],["e-av-sd","Sound system"],["e-av-mc","Microphone"],["e-av-st","Stage"],["e-av-fc","Flipchart"]];
-const getChecks = (ids) => ids.filter(([id]) => $(id).checked).map(([,label]) => label);
-const setChecks = (ids, vals) => ids.forEach(([id,label]) => { $(id).checked = (vals||[]).includes(label); });
-let editingBeo = null;
-function saveBeo(){
-  const pax=Number($("e-pax").value)||0, price=Number($("e-price").value)||0;
-  const fields = { name:$("e-name").value.trim(), account:$("e-account").value.trim(),
-    contact:$("e-contact").value.trim(), phone:$("e-phone").value.trim(),
-    eventDate:$("e-date").value, startTime:$("e-start").value, endTime:$("e-end").value,
-    venue:$("e-venue").value.trim(), setup:$("e-setup").value, type:$("e-type").value,
-    pax, expectedPax:Number($("e-expected").value)||0,
-    pricePax:price, deposit:Number($("e-deposit").value)||0,
-    meals:getChecks(MEAL_IDS), coffeeBreaks:Number($("e-cb").value)||0,
-    menu:$("e-menu").value.trim(), av:getChecks(AV_IDS),
-    payTerms:$("e-payterms").value, cutoff:$("e-cutoff").value,
-    notes:$("e-notes").value.trim() };
-  if (!fields.name || !fields.eventDate || pax<1){ toast("Event name, date and guaranteed pax are required.", null); return; }
-  if (editingBeo){
-    const id = editingBeo;
-    commit(d => { const x=d.beos.find(v=>v.id===id); if (!x) return {error:"Event no longer exists."};
-      Object.assign(x, fields, { revenue: pax*price }); delete x.pendingChange; },
-      "Event updated.", null).then(ok => { if (ok) beoEditCancel(); });
-    return;
-  }
-  const e = { id:uid(), dateBooked:$("e-booked").value, ...fields, revenue: pax*price,
-    status:$("e-status").value, salesperson:S.user.name };
-  const fb = [...e.meals, e.coffeeBreaks?`${e.coffeeBreaks}\u00d7 coffee break`:""].filter(Boolean).join(", ");
-  const body = `NEW EVENT (BEO) \u2014 ${e.name}\n${e.account||"\u2014"}${e.contact?` \u00b7 ${e.contact}${e.phone?" "+e.phone:""}`:""}\n${e.type} \u00b7 ${e.eventDate}${e.startTime?` \u00b7 ${e.startTime}${e.endTime?"\u2013"+e.endTime:""}`:""}${e.venue?` \u00b7 ${e.venue}`:""}${e.setup?` \u00b7 ${e.setup}`:""}\n${pax} pax \u00d7 ${money(price)} \u2192 ${money(e.revenue)}${e.deposit?` \u00b7 deposit ${money(e.deposit)}`:""}\n${fb?`F&B: ${fb}\n`:""}${e.menu?`Menu: ${e.menu}\n`:""}${e.av.length?`AV: ${e.av.join(", ")}\n`:""}${e.payTerms?`Terms: ${e.payTerms}`:""}${e.cutoff?` \u00b7 final numbers by ${e.cutoff}`:""}\n${e.status} \u00b7 by ${e.salesperson}${e.notes?`\n${e.notes}`:""}`;
-  commit(d => { d.beos.push(e); }, "Event booked.",
-    d => mailto(d.settings.managerEmail, `Titanic Sales \u2014 new event: ${e.name}`, withSig(d.settings, body)))
-  .then(ok => { if (ok) beoEditCancel(); });
-}
-function beoEdit(id){
-  const e = S.data.beos.find(x=>x.id===id); if (!e) return;
-  editingBeo = id;
-  beoSetView("book");
-  $("e-name").value=e.name||""; $("e-account").value=e.account||"";
-  $("e-contact").value=e.contact||""; $("e-phone").value=e.phone||"";
-  $("e-date").value=e.eventDate||todayISO(); $("e-type").value=e.type||EVENT_TYPES[0];
-  $("e-start").value=e.startTime||""; $("e-end").value=e.endTime||"";
-  $("e-venue").value=e.venue||""; $("e-setup").value=e.setup||SETUPS[0];
-  $("e-pax").value=e.pax||""; $("e-expected").value=e.expectedPax||"";
-  $("e-price").value=e.pricePax||""; $("e-deposit").value=e.deposit||"";
-  setChecks(MEAL_IDS, e.meals); $("e-cb").value=e.coffeeBreaks||"";
-  $("e-menu").value=e.menu||""; setChecks(AV_IDS, e.av);
-  $("e-payterms").value=e.payTerms||EVENT_PAY[0]; $("e-cutoff").value=e.cutoff||"";
-  $("e-status").value=e.status||"Tentative"; $("e-booked").value=e.dateBooked||todayISO();
-  $("e-notes").value=e.notes||"";
-  $("beo-form-title").textContent = "Change event \u2014 " + (e.name || "");
-  $("beo-save-btn").textContent = "Apply changes";
-  $("beo-cancel-edit").style.display = "";
-  renderBeoSum();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-function beoEditCancel(){
-  editingBeo = null;
-  ["e-name","e-account","e-contact","e-phone","e-start","e-end","e-venue","e-expected",
-   "e-pax","e-price","e-deposit","e-cb","e-menu","e-cutoff","e-notes"].forEach(i => $(i).value="");
-  setChecks(MEAL_IDS, []); setChecks(AV_IDS, []);
-  $("e-date").value = todayISO(); $("e-booked").value = todayISO();
-  $("beo-form-title").textContent = "Book an event (BEO)";
-  $("beo-save-btn").textContent = "Save event";
-  $("beo-cancel-edit").style.display = "none";
-  renderBeoSum();
-}
 
 function fuDone(id){ commit(d => { const x=d.fus.find(f=>f.id===id); if (x) x.completed = todayISO(); }, "Marked done.", null); }
 function issResolve(id){ commit(d => { const x=d.issues.find(i=>i.id===id); if (x){ x.status="Resolved"; x.resolved=todayISO(); } }, "Resolved.", null); }
@@ -1387,7 +1177,6 @@ function bkCancel(id){
   if (!confirm("Cancel this booking? Its rooms return to availability.")) return;
   commit(d => { const x=d.bookings.find(b=>b.id===id); if (x) x.status="Cancelled"; }, "Cancelled.", null);
 }
-function beoConfirm(id){ if (isBanquet()) return; commit(d => { const x=d.beos.find(e=>e.id===id); if (x) x.status="Definite"; }, "Confirmed.", null); }
 function delEntry(kind, id){
   if (!isAdmin()) return;
   if (!confirm("Delete this record? This cannot be undone.")) return;
@@ -1400,7 +1189,6 @@ function openSettings(){
   $("st-email").value = S.data.settings.managerEmail || "";
   $("st-rooms").value = S.data.settings.totalRooms || 87;
   $("st-teampw").value = S.data.settings.teamPassword || "sozan";
-  $("st-banqpw").value = S.data.settings.banquetPassword || "banquet";
   $("st-receppw").value = S.data.settings.receptionPassword || "reception";
   $("st-maintpw").value = S.data.settings.maintenancePassword || "maintenance";
   $("st-purchpw").value = S.data.settings.purchasingPassword || "purchasing";
@@ -1411,13 +1199,13 @@ function openSettings(){
   $("st-sig").value = S.data.settings.emailSig || "";
   teamDraft = JSON.parse(JSON.stringify(S.data.settings.team || []));
   renderTeam();
+  renderArchivePanel();
   $("modal").style.display = "flex";
 }
 function closeSettings(){ $("modal").style.display = "none"; }
 function saveSettings(){
   const email=$("st-email").value.trim(), rooms=Number($("st-rooms").value)||87;
   const teampw=$("st-teampw").value.trim() || "sozan";
-  const banqpw=$("st-banqpw").value.trim() || "banquet";
   const receppw=$("st-receppw").value.trim() || "reception";
   const maintpw=$("st-maintpw").value.trim() || "maintenance";
   const purchpw=$("st-purchpw").value.trim() || "purchasing";
@@ -1425,11 +1213,94 @@ function saveSettings(){
   const deptpw=$("st-deptpw").value.trim() || "titanic";
   const resTo=$("st-resto").value.trim(), resCc=$("st-rescc").value.trim();
   const sig=$("st-sig").value.trim();
-  commit(d => { d.settings.managerEmail=email; d.settings.totalRooms=rooms; d.settings.teamPassword=teampw; d.settings.banquetPassword=banqpw; d.settings.receptionPassword=receppw; d.settings.maintenancePassword=maintpw; d.settings.purchasingPassword=purchpw; d.settings.accountingPassword=acctpw; d.settings.deptPassword=deptpw; d.settings.resTo=resTo; d.settings.resCc=resCc; d.settings.emailSig=sig; d.settings.team=teamDraft; },
+  commit(d => { d.settings.managerEmail=email; d.settings.totalRooms=rooms; d.settings.teamPassword=teampw; d.settings.receptionPassword=receppw; d.settings.maintenancePassword=maintpw; d.settings.purchasingPassword=purchpw; d.settings.accountingPassword=acctpw; d.settings.deptPassword=deptpw; d.settings.resTo=resTo; d.settings.resCc=resCc; d.settings.emailSig=sig; d.settings.team=teamDraft; },
     "Settings saved.", null).then(ok => { if (ok) closeSettings(); });
 }
 
+/* ================= storage & archive (admin) ================= */
+const ARC_DEFS = [
+  { key:"bookings", label:"Rooms / bookings",        date:r => r.checkOut || r.dateBooked || "",      elig:null,                              note:"by check-out date" },
+  { key:"calls",    label:"Client touches",          date:r => r.date || "",                          elig:null,                              note:"calls, visits, proposals" },
+  { key:"fus",      label:"Follow-ups",              date:r => r.completed || r.date || "",           elig:r => !!r.completed,                note:"done ones only" },
+  { key:"issues",   label:"Issues",                  date:r => r.resolved || r.date || "",            elig:r => r.status === "Resolved",      note:"resolved only" },
+  { key:"pos",      label:"Purchase orders",         date:r => r.dateSubmitted || "",                 elig:r => r.status === PO_STAGES.C || r.status === PO_STAGES.X, note:"completed / declined only" },
+  { key:"morders",  label:"Maintenance orders",      date:r => r.dateSubmitted || "",                 elig:r => r.status === "Done",          note:"done only" },
+  { key:"beos",     label:"Old events (BEO)",        date:r => r.eventDate || r.dateBooked || "",     elig:null,                              note:"legacy records" },
+];
+const ARC_CHOICES = [["","Keep all"],["1","&gt; 1 month old"],["3","&gt; 3 months old"],["6","&gt; 6 months old"],["12","&gt; 12 months old"],["all","Everything eligible"]];
+function monthsAgoISO(n){ const d = new Date(); d.setMonth(d.getMonth() - n);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function arcCutoff(choice){ const c = choice === "all" ? todayISO() : monthsAgoISO(Number(choice)); const t = todayISO(); return c < t ? c : t; }
+function arcEligible(data, def, choice){
+  if (!choice) return [];
+  const cut = arcCutoff(choice);
+  return (data[def.key] || []).filter(r => { const dt = def.date(r); return dt && dt < cut && (!def.elig || def.elig(r)); });
+}
+function fmtKB(b){ b = Number(b)||0; return b >= 1048576 ? (b/1048576).toFixed(2)+" MB" : Math.max(1, Math.round(b/1024))+" KB"; }
+function arcSizeBadge(){
+  const b = S.fileSize || JSON.stringify(S.data, null, 1).length;
+  const pct = Math.min(100, Math.round(b / 10485.76));
+  const col = b < 614400 ? "#16a34a" : b < 870400 ? "#d97706" : "#dc2626";
+  const word = b < 614400 ? "healthy" : b < 870400 ? "getting full" : "archive now";
+  return `<div style="font-weight:800;font-size:14px;color:${col};">${fmtKB(b)}</div>
+    <div class="muted" style="font-size:11px;">of 1 MB &mdash; ${word}</div>
+    <div style="height:4px;border-radius:2px;background:#E2E8F0;margin-top:4px;"><div style="height:4px;border-radius:2px;width:${pct}%;background:${col};"></div></div>`;
+}
+function renderArchivePanel(){
+  if (!$("arc-rows")) return;
+  $("arc-rows").innerHTML = ARC_DEFS.map(def => {
+    const total = (S.data[def.key] || []).length;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule);">
+      <div style="flex:1;min-width:0;font-size:13px;"><b>${def.label}</b> <span class="muted">&middot; ${total} rows</span><br>
+        <span class="muted" style="font-size:11px;">${def.note} &middot; <span id="arc-n-${def.key}">nothing selected</span></span></div>
+      <select id="arc-sel-${def.key}" style="width:140px;margin:0;flex:none;" onchange="arcRecount()">
+        ${ARC_CHOICES.map(([v,l]) => `<option value="${v}">${l}</option>`).join("")}
+      </select>
+    </div>`;
+  }).join("");
+  $("arc-size").innerHTML = arcSizeBadge();
+  arcRecount();
+}
+function arcRecount(){
+  let total = 0, bytes = 0;
+  for (const def of ARC_DEFS){
+    const sel = $("arc-sel-" + def.key); if (!sel) continue;
+    const rows = arcEligible(S.data, def, sel.value);
+    total += rows.length;
+    const rb = rows.reduce((s,r) => s + JSON.stringify(r).length, 0);
+    bytes += rb;
+    const n = $("arc-n-" + def.key);
+    if (n) n.textContent = sel.value ? (rows.length ? `${rows.length} rows would move (~${fmtKB(rb)})` : "nothing old enough") : "nothing selected";
+  }
+  const btn = $("arc-btn");
+  if (btn) btn.textContent = total ? `Archive ${total} rows (frees ~${fmtKB(bytes)})` : "Archive selected";
+}
+async function runArchive(){
+  if (!isAdmin()) return;
+  const picks = ARC_DEFS.filter(def => $("arc-sel-"+def.key) && $("arc-sel-"+def.key).value);
+  if (!picks.length){ toast("Choose what to archive first.", null); return; }
+  const btn = $("arc-btn"); btn.disabled = true; const keep = btn.textContent; btn.textContent = "Archiving…";
+  try {
+    const latest = await ghGet();
+    const moved = {}; let n = 0;
+    for (const def of picks){
+      const rows = arcEligible(latest.data, def, $("arc-sel-"+def.key).value);
+      if (rows.length){ moved[def.key] = rows; n += rows.length; }
+    }
+    if (!n){ toast("Nothing old enough to archive.", null); return; }
+    if (!confirm(`Move ${n} rows out of the live file into the archive? They stay in the repo forever.`)) return;
+    const path = `archive/archive-${todayISO()}-${Date.now().toString(36)}.json`;
+    await ghPutFile(path, b64enc(JSON.stringify({ archivedAt: todayISO(), by: S.user ? S.user.name : "admin",
+      counts: Object.fromEntries(Object.entries(moved).map(([k,v]) => [k, v.length])), data: moved }, null, 1)));
+    const ids = {}; for (const k in moved) ids[k] = new Set(moved[k].map(r => r.id));
+    const ok = await commit(d => { for (const k in ids) d[k] = (d[k] || []).filter(r => !ids[k].has(r.id)); },
+      `Archived ${n} rows → ${path}`, null);
+    if (ok) renderArchivePanel();
+  } catch(e){ toast("Archive failed — " + (e && e.message ? e.message : "try again"), null); }
+  finally { btn.disabled = false; if (btn.textContent === "Archiving…") btn.textContent = keep; }
+}
 /* ================= team directory ================= */
+
 let teamDraft = [];
 function renderTeam(){
   $("st-team").innerHTML = teamDraft.length
