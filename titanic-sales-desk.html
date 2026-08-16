@@ -38,6 +38,9 @@
   .mini{display:inline-block; border:0; border-radius:8px; padding:7px 11px; font-size:12px; font-weight:700;
         color:#fff; background:var(--navy); cursor:pointer; white-space:nowrap;}
   .mini.danger{background:#fff; color:#BE123C; border:1px solid #FDA4AF;}
+  .dchip{display:inline-block; border:1px solid #CBD5E1; border-radius:8px; padding:7px 11px; font-size:12px;
+         font-weight:700; color:var(--ink); background:#fff; cursor:pointer; white-space:nowrap;}
+  .dchip.sel{background:var(--brass); border-color:var(--brass-dark); color:#1C2733;}
   .chip{display:inline-block; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:700;}
   .c-green{background:#D1FAE5; color:#065F46;} .c-amber{background:#FEF3C7; color:#92400E;}
   .c-red{background:#FFE4E6; color:#9F1239;} .c-slate{background:#E2E8F0; color:#334155;}
@@ -154,6 +157,7 @@
       <div class="sub" id="hdr-sub"></div>
     </div>
     <div style="display:flex;gap:2px;">
+      <button id="btn-report" onclick="setTab('report')" title="Report">&#128202;</button>
       <button onclick="refresh(true)" title="Refresh">&#8635;</button>
       <button id="btn-settings" onclick="openSettings()" title="Settings">&#9881;</button>
       <button onclick="signOut()" title="Sign out">&#10162;</button>
@@ -164,10 +168,16 @@
 
     <!-- REPORT -->
     <div id="tab-report" style="display:none;">
-      <div class="row2" style="align-items:end;">
-        <div><label>Report date</label><input type="date" id="rp-date" onchange="renderReport()"></div>
+      <div class="seg" style="grid-template-columns:1fr 1fr 1fr;">
+        <button id="rp-p-day" class="on" onclick="rpSet('day')">Day</button>
+        <button id="rp-p-week" onclick="rpSet('week')">Week</button>
+        <button id="rp-p-month" onclick="rpSet('month')">Month</button>
+      </div>
+      <div class="row2" style="align-items:end;margin-top:8px;">
+        <div><label id="rp-datelabel">Date</label><input type="date" id="rp-date" onchange="renderReport()"></div>
         <a id="rp-mail" class="btn" style="text-align:center;text-decoration:none;margin-top:0;background:var(--brass);color:#1C2733;">&#9993; Email</a>
       </div>
+      <div class="muted" id="rp-scope" style="margin-top:6px;"></div>
       <div class="card" style="margin-top:12px;">
         <div class="pad" style="padding-bottom:6px;"><div class="h serif" id="rp-title"></div></div>
         <div id="rp-body"></div>
@@ -191,6 +201,7 @@
         <label>Notes</label><input id="c-notes" placeholder="What happened">
         <button class="btn" onclick="saveCall()">Save touch</button>
       </div></div>
+      <div id="vw-calls"></div>
       <div id="list-calls"></div>
     </div>
 
@@ -206,6 +217,7 @@
         </div>
         <button class="btn" onclick="saveFu()">Save follow-up</button>
       </div></div>
+      <div id="vw-fus"></div>
       <div id="list-fus"></div>
     </div>
 
@@ -221,6 +233,7 @@
         </div>
         <button class="btn" onclick="saveIssue()">Save issue</button>
       </div></div>
+      <div id="vw-issues"></div>
       <div id="list-issues"></div>
     </div>
 
@@ -250,6 +263,7 @@
         <div id="b-err" class="err" style="display:none;"></div>
         <button class="btn" id="b-save" onclick="saveBooking()">Save booking</button>
       </div></div>
+      <div id="vw-bookings"></div>
       <div id="list-bookings"></div>
       <div class="muted">Overbooking is blocked against bookings logged here vs your room count. Front-desk and OTA bookings live in the PMS.</div>
     </div>
@@ -445,7 +459,39 @@ const addDays = (iso,n) => { const [y,m,d]=iso.split("-").map(Number);
 const nightsBetween = (ci,co) => { const [a,b,c]=ci.split("-").map(Number); const [x,y,z]=co.split("-").map(Number);
   return Math.round((Date.UTC(x,y-1,z)-Date.UTC(a,b-1,c))/86400000); };
 const uid = () => Date.now() + "-" + Math.random().toString(36).slice(2,7);
-const mailto = (to,sub,body,cc) => `mailto:${to||""}?${cc?`cc=${encodeURIComponent(cc)}&`:""}subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+const addrList = (v) => String(v||"").split(/[,;]+/).map(x=>x.trim()).filter(Boolean).join(",");
+const mailto = (to,sub,body,cc) => { const c = addrList(cc);
+  return `mailto:${addrList(to)}?${c?`cc=${c}&`:""}subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`; };
+const withSigRes = (st, body) => {
+  const u = S.user || {}; const L = [];
+  if (u.name) L.push(u.name + (u.position ? " \u2014 " + u.position : ""));
+  if (u.email) L.push(u.email);
+  if (st.emailSig) L.push(st.emailSig);
+  return L.length ? body + "\n" + L.join("\n") : body;
+};
+const dm = (iso) => { if (!iso) return ""; const p = String(iso).split("-"); return p.length===3 ? Number(p[2])+"/"+Number(p[1]) : iso; };
+const USE_WORD = { 1:"single use", 2:"double use", 3:"triple use", 4:"quad use" };
+const BOARD_TXT = { "BB":"B/B", "HB":"H/B", "FB":"F/B", "BO":"B/O", "AI":"A/I", "On Account":"ON ACCOUNT" };
+const rateTxt = (cur,n) => cur === "IQD" ? Number(n||0).toLocaleString() + " IQD" : Number(n||0) + "$";
+function resEmailBody(e){
+  const groups = [];
+  (e.lines||[]).forEach(l => {
+    const key = [l.type,l.pax,l.adr,l.cur,l.pay,l.guest||""].join("|");
+    const g = groups.find(x => x.key === key);
+    if (g) g.n++; else groups.push({ key, n:1, l });
+  });
+  const blocks = groups.map(g => {
+    const l = g.l, use = USE_WORD[Number(l.pax)] || (l.pax ? l.pax + " pax" : "");
+    return [ `${g.n}${String(l.type||"").toLowerCase()}${use?" \u2013 "+use:""}`, l.guest||"",
+             `Cin ${dm(e.checkIn)}`, `Co ${dm(e.checkOut)}`, `Rate ${rateTxt(l.cur,l.adr)}` ].filter(Boolean).join("\n");
+  });
+  const boards = [...new Set((e.lines||[]).map(l => BOARD_TXT[l.pay] || l.pay))].filter(Boolean).join(" / ");
+  const out = ["Dear FO", "Kindly make a reservation below", "", blocks.join("\n\n"), ""];
+  out.push(`${boards} ON ${String(e.account||"").toUpperCase()}`);
+  if (e.notes) out.push("", e.notes);
+  out.push("", "SINCERELY");
+  return out.join("\n");
+}
 const withSig = (st, body) => {
   const u = S.user || {};
   const lines = [];
@@ -546,37 +592,64 @@ function minAvailability(bookings, ci, co, total){
 }
 
 /* ================= report ================= */
-function computeReport(date, D){
-  const t = D.calls.filter(c => c.date === date);
-  const act = D.bookings.filter(b => b.status !== "Cancelled");
-  const pick = act.filter(b => b.dateBooked === date);
-  const month = date.slice(0,7);
-  const mtd = act.filter(b => b.dateBooked && b.dateBooked.slice(0,7) === month && b.dateBooked <= date);
+let rpPeriod = "day";
+function rpSet(p){
+  rpPeriod = p;
+  ["day","week","month"].forEach(k => { const b = $("rp-p-"+k); if (b) b.classList.toggle("on", k===p); });
+  renderReport();
+}
+function rpRange(){
+  const a = ($("rp-date") && $("rp-date").value) || todayISO();
+  if (rpPeriod === "week") return [addDays(a,-6), a];
+  if (rpPeriod === "month") return [a.slice(0,7) + "-01", a];
+  return [a, a];
+}
+/* strict=true: only rows explicitly owned by `who` (used for the admin per-person breakdown,
+   so ownerless legacy rows are never counted twice). strict=false: matches what that person
+   actually sees in their lists, i.e. their own rows plus ownerless legacy rows. */
+function scopeRows(arr, who, strict){
+  if (!who) return arr || [];
+  return (arr||[]).filter(r => strict ? ownerOf(r) === who : (!ownerOf(r) || ownerOf(r) === who));
+}
+function computeRange(from, to, D, who, strict){
+  const C = scopeRows(D.calls, who, strict), F = scopeRows(D.fus, who, strict), I = scopeRows(D.issues, who, strict);
+  const B = scopeRows(D.bookings, who, strict).filter(b => b.status !== "Cancelled");
+  const R = [from, to], inR = (d) => inRange(d, R);
+  const t = C.filter(c => inR(c.date));
+  const pick = B.filter(b => inR(b.dateBooked));
+  const arrv = B.filter(b => inR(b.checkIn));
   const sum = (a,k) => a.reduce((s,x) => s + Number(x[k]||0), 0);
   return {
     touches:t.length,
     calls:t.filter(c=>c.type==="Sales Call").length,
     insp:t.filter(c=>c.type==="Site Inspection").length,
     props:t.filter(c=>c.type==="Proposal Sent").length,
-    fuDone:D.fus.filter(f=>f.completed===date).length,
-    fuDueOpen:D.fus.filter(f=>f.due===date && !f.completed).length,
-    fuOver:D.fus.filter(f=>!f.completed && f.due && f.due<date).length,
-    issNew:D.issues.filter(i=>i.date===date).length,
-    issOpen:D.issues.filter(i=>i.status==="Open").length,
-    issHigh:D.issues.filter(i=>i.status==="Open" && i.severity==="High").length,
+    fuNew:F.filter(f=>inR(f.date)).length,
+    fuDone:F.filter(f=>inR(f.completed)).length,
+    fuOpen:F.filter(f=>!f.completed).length,
+    fuOver:F.filter(f=>!f.completed && f.due && f.due < to).length,
+    issNew:I.filter(i=>inR(i.date)).length,
+    issRes:I.filter(i=>inR(i.resolved)).length,
+    issOpen:I.filter(i=>i.status==="Open").length,
+    issHigh:I.filter(i=>i.status==="Open" && i.severity==="High").length,
     pkCount:pick.length, pkNights:sum(pick,"nights"), pkPax:sum(pick,"pax"), pkRev:sum(pick,"revenue"), pkRevIQD:sum(pick,"revenueIQD"),
-    mtdNights:sum(mtd,"nights"), mtdRev:sum(mtd,"revenue"), mtdRevIQD:sum(mtd,"revenueIQD"),
+    arCount:arrv.length, arNights:sum(arrv,"nights"), arPax:sum(arrv,"pax"), arRev:sum(arrv,"revenue"), arRevIQD:sum(arrv,"revenueIQD"),
   };
 }
-function reportText(date, D){
-  const r = computeReport(date, D);
+function periodTitle(from, to){
+  const word = rpPeriod === "day" ? "Day register" : rpPeriod === "week" ? "Week" : "Month to date";
+  return from === to ? `${word} \u2014 ${from}` : `${word} \u2014 ${from} \u2192 ${to}`;
+}
+function reportText(from, to, D, who){
+  const r = computeRange(from, to, D, who, false);
   return [
-    `DAILY SALES REPORT — ${date}`, `Titanic Hotel & SPA`, ``,
+    `SALES REPORT \u2014 ${from === to ? from : from + " to " + to}`,
+    `Titanic Hotel & SPA${who ? " \u2014 " + who : ""}`, ``,
     `ACTIVITY`, `Client touches: ${r.touches} (calls ${r.calls}, inspections ${r.insp}, proposals ${r.props})`, ``,
-    `FOLLOW-UPS`, `Completed: ${r.fuDone} · Due today open: ${r.fuDueOpen} · Overdue: ${r.fuOver}`, ``,
-    `ISSUES`, `New: ${r.issNew} · Open total: ${r.issOpen} (high: ${r.issHigh})`, ``,
-    `PICKUP (ROOMS)`, `Bookings: ${r.pkCount} · Room nights: ${r.pkNights} · Pax: ${r.pkPax} · Revenue: ${revParts(r.pkRev, r.pkRevIQD)}`,
-    `Month to date: ${r.mtdNights} nights · ${revParts(r.mtdRev, r.mtdRevIQD)}`, ``,
+    `FOLLOW-UPS`, `Logged: ${r.fuNew} \u00b7 Completed: ${r.fuDone} \u00b7 Still open: ${r.fuOpen} \u00b7 Overdue: ${r.fuOver}`, ``,
+    `ISSUES`, `Logged: ${r.issNew} \u00b7 Resolved: ${r.issRes} \u00b7 Open now: ${r.issOpen} (high: ${r.issHigh})`, ``,
+    `PICKUP (BOOKED IN PERIOD)`, `Bookings: ${r.pkCount} \u00b7 Room nights: ${r.pkNights} \u00b7 Pax: ${r.pkPax} \u00b7 Revenue: ${revParts(r.pkRev, r.pkRevIQD)}`, ``,
+    `ARRIVALS IN PERIOD`, `Bookings: ${r.arCount} \u00b7 Room nights: ${r.arNights} \u00b7 Revenue: ${revParts(r.arRev, r.arRevIQD)}`, ``,
     `Inventory: ${D.settings.totalRooms} rooms`,
   ].join("\n");
 }
@@ -634,6 +707,12 @@ function disconnectRepo(){
 
 /* ================= app render ================= */
 const isAdmin = () => S.role === "admin";
+const ownerOf = (r) => r.createdBy || r.salesperson || r.owner || "";
+const seesAll = () => isAdmin() || isReception();
+/* rows with no recorded owner predate the per-person split — they stay visible to everyone,
+   so nothing disappears on upgrade. Everything logged from now on carries createdBy. */
+const ownedRows = (arr) => seesAll() ? (arr||[])
+  : (arr||[]).filter(r => !ownerOf(r) || ownerOf(r) === (S.user ? S.user.name : ""));
 const isReception = () => S.role === "reception";
 const isMaint = () => S.role === "maintenance";
 const isPurch = () => S.role === "purchasing";
@@ -649,6 +728,10 @@ function enterApp(){
     maintenance:"Maintenance", purchasing:"Purchasing", accounting:"Accounting", dept:esc(S.dept), regular:"Sales team" };
   $("hdr-sub").innerHTML = `${todayISO()} · ${esc(S.user.name)} <span style="color:${isAdmin()?"var(--brass)":"#94A3B8"};font-weight:700;">${badges[S.role]||""}</span>`;
   $("btn-settings").style.display = isAdmin() ? "" : "none";
+  $("btn-report").style.display = (TABSETS[S.role]||[]).includes("report") ? "" : "none";
+  Object.keys(VS).forEach(k => { VS[k].v = "active"; VS[k].d = "today"; VS[k].date = ""; if ("by" in VS[k]) VS[k].by = "booked"; });
+  rpPeriod = "day";
+  ["day","week","month"].forEach(k => { const b = $("rp-p-"+k); if (b) b.classList.toggle("on", k === "day"); });
   bkLines = [bkBlankLine()]; renderBkLines();
   poItems = [poBlankItem()]; renderPoItems();
   $("bk-form-card").style.display = isReception() ? "none" : "";
@@ -658,7 +741,7 @@ function enterApp(){
 }
 const TABSETS = {
   admin: ["report","calls","fus","issues","bookings","morders","pos","invs"],
-  regular: ["calls","fus","issues","bookings","morders","pos"],
+  regular: ["report","calls","fus","issues","bookings","morders","pos"],
   reception: ["bookings","morders","pos"],
   maintenance: ["morders","pos"],
   purchasing: ["pos","morders"],
@@ -970,18 +1053,89 @@ function poDecline(id){
 }
 
 function renderReport(){
-  if (!isAdmin()) return;
-  const date = $("rp-date").value || todayISO();
-  const r = computeReport(date, S.data);
-  $("rp-title").textContent = "Day Register — " + date;
-  $("rp-mail").href = mailto(S.data.settings.managerEmail, `Daily Sales Report — ${date} — Titanic Hotel & SPA`, withSig(S.data.settings, reportText(date, S.data)));
+  if (!$("rp-body") || !(TABSETS[S.role]||[]).includes("report")) return;
+  const [from, to] = rpRange();
+  const who = isAdmin() ? "" : (S.user ? S.user.name : "");
+  const r = computeRange(from, to, S.data, who);
+  const lbl = $("rp-datelabel");
+  if (lbl) lbl.textContent = rpPeriod === "day" ? "Date" : rpPeriod === "week" ? "Week ending" : "Month, up to";
+  $("rp-title").textContent = periodTitle(from, to);
+  $("rp-scope").textContent = who ? `Your own numbers, ${who}.` : "Whole team \u2014 everyone's numbers.";
+  $("rp-mail").href = mailto(S.data.settings.managerEmail,
+    `Sales Report \u2014 ${from === to ? from : from + " to " + to}${who ? " \u2014 " + who : ""} \u2014 Titanic Hotel & SPA`,
+    withSig(S.data.settings, reportText(from, to, S.data, who)));
   const kv = (k,v,st) => `<div class="kv ${st?"strong":""}"><span>${k}</span><span>${v}</span></div>`;
-  $("rp-body").innerHTML =
+  let html =
     `<div class="sec"><div class="st">Activity</div>${kv("Client touches",r.touches)}${kv("Sales calls",r.calls)}${kv("Site inspections",r.insp)}${kv("Proposals sent",r.props)}</div>`+
-    `<div class="sec"><div class="st">Follow-ups</div>${kv("Completed",r.fuDone)}${kv("Due, still open",r.fuDueOpen)}${kv("Overdue (as of this date)",r.fuOver,1)}</div>`+
-    `<div class="sec"><div class="st">Issues</div>${kv("Logged this day",r.issNew)}${kv("Open now",r.issOpen,1)}${kv("Open · high severity",r.issHigh,1)}</div>`+
-    `<div class="sec"><div class="st">Pickup — rooms</div>${kv("Bookings logged",r.pkCount)}${kv("Room nights",r.pkNights)}${kv("Guests (pax)",r.pkPax)}${kv("Revenue",revParts(r.pkRev,r.pkRevIQD),1)}${kv("Month to date",`${r.mtdNights} nights · ${revParts(r.mtdRev,r.mtdRevIQD)}`)}</div>`;
+    `<div class="sec"><div class="st">Follow-ups</div>${kv("Logged",r.fuNew)}${kv("Completed",r.fuDone)}${kv("Still open",r.fuOpen)}${kv("Overdue",r.fuOver,1)}</div>`+
+    `<div class="sec"><div class="st">Issues</div>${kv("Logged",r.issNew)}${kv("Resolved",r.issRes)}${kv("Open now",r.issOpen,1)}${kv("Open \u00b7 high severity",r.issHigh,1)}</div>`+
+    `<div class="sec"><div class="st">Pickup \u2014 booked in period</div>${kv("Bookings",r.pkCount)}${kv("Room nights",r.pkNights)}${kv("Guests (pax)",r.pkPax)}${kv("Revenue",revParts(r.pkRev,r.pkRevIQD),1)}</div>`+
+    `<div class="sec"><div class="st">Arrivals in period</div>${kv("Bookings",r.arCount)}${kv("Room nights",r.arNights)}${kv("Revenue",revParts(r.arRev,r.arRevIQD),1)}</div>`;
+  if (isAdmin()){
+    const names = [...new Set([...(S.data.settings.team||[]).map(t => t.name),
+      ...S.data.calls.map(ownerOf), ...S.data.bookings.map(ownerOf)])].filter(Boolean);
+    if (names.length){
+      html += `<div class="sec"><div class="st">By salesperson</div>` + names.map(n => {
+        const x = computeRange(from, to, S.data, n, true);
+        const pl = (v,w) => `${v} ${w}${v===1?"":"s"}`;
+        return kv(n, `${pl(x.touches,"touch").replace("touchs","touches")} \u00b7 ${pl(x.pkCount,"booking")} \u00b7 ${pl(x.pkNights,"night")} \u00b7 ${revParts(x.pkRev,x.pkRevIQD)}`);
+      }).join("") + `</div>`;
+    }
+  }
+  $("rp-body").innerHTML = html;
 }
+
+/* ================= per-tab views (Active / By date / History) ================= */
+const VS = {
+  calls:    { v:"active", d:"today", date:"" },
+  fus:      { v:"active", d:"today", date:"" },
+  issues:   { v:"active", d:"today", date:"" },
+  bookings: { v:"active", d:"today", date:"", by:"booked" },
+};
+const VIEW_LABELS = {
+  calls:    { active:"Recent", date:"By date", history:"History" },
+  fus:      { active:"Open",   date:"By date", history:"History" },
+  issues:   { active:"Open",   date:"By date", history:"History" },
+  bookings: { active:"Current", date:"By date", history:"History" },
+};
+const DATE_CHIPS = [["today","Today"],["yest","Yesterday"],["7","Last 7 days"],["30","Last 30 days"],["month","This month"],["pick","Pick a day"]];
+function dateRangeFor(k, pick){
+  const t = todayISO();
+  if (k === "yest"){ const y = addDays(t,-1); return [y,y]; }
+  if (k === "7") return [addDays(t,-6), t];
+  if (k === "30") return [addDays(t,-29), t];
+  if (k === "month") return [t.slice(0,7) + "-01", t];
+  if (k === "pick"){ const d = pick || t; return [d,d]; }
+  return [t,t];
+}
+function dateRangeLabel(k, pick){
+  const R = dateRangeFor(k, pick);
+  return R[0] === R[1] ? R[0] : R[0] + " \u2192 " + R[1];
+}
+const RENDERERS = { calls:() => renderCalls(), fus:() => renderFus(), issues:() => renderIssues(), bookings:() => renderBookings() };
+function vsSet(tab, v){ VS[tab].v = v; RENDERERS[tab](); }
+function vsDate(tab, k){ VS[tab].d = k; if (k !== "pick") VS[tab].date = ""; RENDERERS[tab](); }
+function vsPick(tab, val){ VS[tab].date = val; RENDERERS[tab](); }
+function vsBy(tab, by){ VS[tab].by = by; RENDERERS[tab](); }
+function renderViewBar(tab){
+  const host = $("vw-" + tab); if (!host) return;
+  const st = VS[tab], L = VIEW_LABELS[tab];
+  let h = `<div class="seg" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:8px;">` +
+    ["active","date","history"].map(k => `<button class="${st.v===k?"on":""}" onclick="vsSet('${tab}','${k}')">${L[k]}</button>`).join("") + `</div>`;
+  if (st.v === "date"){
+    if (tab === "bookings"){
+      h += `<div class="seg" style="margin-bottom:8px;">` +
+        [["booked","Date booked"],["arrival","Arrival date"]].map(([k,lab]) =>
+          `<button class="${st.by===k?"on":""}" onclick="vsBy('bookings','${k}')">${lab}</button>`).join("") + `</div>`;
+    }
+    h += `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">` +
+      DATE_CHIPS.map(([k,lab]) => `<button class="dchip ${st.d===k?"sel":""}" onclick="vsDate('${tab}','${k}')">${lab}</button>`).join("") + `</div>`;
+    if (st.d === "pick") h += `<input type="date" value="${esc(st.date||todayISO())}" onchange="vsPick('${tab}',this.value)" style="margin-bottom:8px;">`;
+    h += `<div class="muted" style="margin-bottom:8px;">Showing ${dateRangeLabel(st.d, st.date)}${tab==="bookings"?` \u00b7 by ${st.by==="arrival"?"arrival":"date booked"}`:""}</div>`;
+  }
+  host.innerHTML = h;
+}
+function inRange(d, R){ return !!d && d >= R[0] && d <= R[1]; }
 
 function listWrap(id, rowsHtml, empty){
   $(id).innerHTML = rowsHtml.length
@@ -990,18 +1144,37 @@ function listWrap(id, rowsHtml, empty){
 }
 
 function renderCalls(){
-  const rows = [...S.data.calls].reverse().map(c => `
+  if (!$("list-calls")) return;
+  renderViewBar("calls");
+  const st = VS.calls, R = dateRangeFor(st.d, st.date), cut = addDays(todayISO(), -29);
+  let src = ownedRows(S.data.calls);
+  if (st.v === "active") src = src.filter(c => (c.date||"") >= cut);
+  else if (st.v === "history") src = src.filter(c => (c.date||"") < cut);
+  else src = src.filter(c => inRange(c.date, R));
+  src = src.slice().sort((a,b) => String(b.date||"").localeCompare(String(a.date||"")));
+  const rows = src.map(c => `
     <div class="entry"><div class="grow">
       <div class="l1">${esc(c.account)}</div>
       <div class="l2">${esc(c.type)} · ${esc(c.outcome)}</div>
       <div class="l3">${esc(c.date)} · ${esc(c.salesperson||"—")}${c.notes?" · "+esc(c.notes):""}</div>
     </div><div class="acts">${binBtn("calls",c.id)}</div></div>`);
-  listWrap("list-calls", rows, "No client touches yet. Log the first call above.");
+  listWrap("list-calls", rows, VS.calls.v === "active" ? "Nothing in the last 30 days. Log a touch above."
+    : VS.calls.v === "history" ? "Nothing older than 30 days yet." : "Nothing logged in that period.");
 }
 
 function renderFus(){
+  if (!$("list-fus")) return;
+  renderViewBar("fus");
   const today = todayISO();
-  const rows = [...S.data.fus].reverse().map(x => {
+  const st = VS.fus, R = dateRangeFor(st.d, st.date);
+  let src = ownedRows(S.data.fus);
+  if (st.v === "active") src = src.filter(x => !x.completed);
+  else if (st.v === "history") src = src.filter(x => !!x.completed);
+  else src = src.filter(x => inRange(x.completed || x.date, R));
+  src = src.slice().sort((a,b) => st.v === "active"
+    ? String(a.due||"").localeCompare(String(b.due||""))
+    : String(b.completed||b.date||"").localeCompare(String(a.completed||a.date||"")));
+  const rows = src.map(x => {
     const st = x.completed ? ["Done","c-green"] : (x.due < today ? ["Overdue","c-red"] : ["Open","c-amber"]);
     return `
     <div class="entry"><div class="grow">
@@ -1013,11 +1186,20 @@ function renderFus(){
       ${binBtn("fus",x.id)}
     </div></div>`;
   });
-  listWrap("list-fus", rows, "Nothing pending. Log a follow-up above.");
+  listWrap("list-fus", rows, VS.fus.v === "active" ? "Nothing pending. Log a follow-up above."
+    : VS.fus.v === "history" ? "No completed follow-ups yet." : "Nothing in that period.");
 }
 
 function renderIssues(){
-  const rows = [...S.data.issues].reverse().map(x => {
+  if (!$("list-issues")) return;
+  renderViewBar("issues");
+  const st = VS.issues, R = dateRangeFor(st.d, st.date);
+  let src = ownedRows(S.data.issues);
+  if (st.v === "active") src = src.filter(x => x.status === "Open");
+  else if (st.v === "history") src = src.filter(x => x.status !== "Open");
+  else src = src.filter(x => inRange(x.resolved || x.date, R));
+  src = src.slice().sort((a,b) => String(b.resolved||b.date||"").localeCompare(String(a.resolved||a.date||"")));
+  const rows = src.map(x => {
     const c = x.status==="Open" ? (x.severity==="High"?["Open · High","c-red"]:[`Open · ${x.severity}`,"c-amber"]) : ["Resolved","c-green"];
     return `
     <div class="entry"><div class="grow">
@@ -1029,11 +1211,23 @@ function renderIssues(){
       ${binBtn("issues",x.id)}
     </div></div>`;
   });
-  listWrap("list-issues", rows, "No issues logged. Good day so far.");
+  listWrap("list-issues", rows, VS.issues.v === "active" ? "No open issues. Good day so far."
+    : VS.issues.v === "history" ? "No resolved issues yet." : "Nothing in that period.");
 }
 
 function renderBookings(){
-  const rows = [...S.data.bookings].reverse().map(b => {
+  if (!$("list-bookings")) return;
+  renderViewBar("bookings");
+  const today = todayISO();
+  const st = VS.bookings, R = dateRangeFor(st.d, st.date);
+  let src = ownedRows(S.data.bookings);
+  if (st.v === "active") src = src.filter(b => b.status !== "Cancelled" && (b.checkOut||"") >= today);
+  else if (st.v === "history") src = src.filter(b => b.status === "Cancelled" || (b.checkOut||"") < today);
+  else src = src.filter(b => inRange(st.by === "arrival" ? b.checkIn : b.dateBooked, R));
+  src = src.slice().sort((a,b) => st.v === "active"
+    ? String(a.checkIn||"").localeCompare(String(b.checkIn||""))
+    : String(b.dateBooked||"").localeCompare(String(a.dateBooked||"")));
+  const rows = src.map(b => {
     const c = b.status==="Definite"?["Definite","c-green"]:b.status==="Tentative"?["Tentative","c-amber"]:["Cancelled","c-red"];
     const rev = b.lines ? revParts(b.revenue, b.revenueIQD) : money(b.revenue);
     const lineHtml = b.lines ? `<div style="margin-top:4px;font-size:12px;color:#334155;">${b.lines.map((l,i)=>`${i+1}) ${esc(l.type)} \u00b7 ${esc(l.pax)} pax \u00b7 ${esc(fmtCur(l.cur,l.adr))}/n \u00b7 ${esc(l.pay)}`).join("<br>")}</div>` : "";
@@ -1049,16 +1243,18 @@ function renderBookings(){
       ${binBtn("bookings",b.id)}
     </div></div>`;
   });
-  listWrap("list-bookings", rows, "No bookings logged yet.");
+  listWrap("list-bookings", rows, VS.bookings.v === "active" ? "No current or upcoming bookings."
+    : VS.bookings.v === "history" ? "No past bookings yet." : "Nothing in that period.");
 }
 
 
 let bkLines = [];
-function bkBlankLine(){ return { type: ROOM_TYPES[0], pax: "", adr: "", cur: "$", pay: PAY_TERMS[0] }; }
+function bkBlankLine(){ return { type: ROOM_TYPES[0], pax: "", adr: "", cur: "$", pay: PAY_TERMS[0], guest: "" }; }
 function readBkLines(){
   return bkLines.map((_, i) => ({
     type: $("bkl-type-"+i).value, pax: Number($("bkl-pax-"+i).value)||0,
     adr: Number($("bkl-adr-"+i).value)||0, cur: $("bkl-cur-"+i).value, pay: $("bkl-pay-"+i).value,
+    guest: ($("bkl-guest-"+i) ? $("bkl-guest-"+i).value.trim() : ""),
   }));
 }
 function renderBkLines(){
@@ -1078,6 +1274,7 @@ function renderBkLines(){
         <div><label>$ / IQD</label><select id="bkl-cur-${i}" oninput="renderBkSummary()">${CURS.map(o=>`<option${o===L.cur?" selected":""}>${o}</option>`).join("")}</select></div>
         <div><label>Payment</label><select id="bkl-pay-${i}">${PAY_TERMS.map(o=>`<option${o===L.pay?" selected":""}>${o}</option>`).join("")}</select></div>
       </div>
+      <label>Guest name (optional)</label><input id="bkl-guest-${i}" value="${esc(L.guest||"")}" placeholder="Name on the room">
     </div>`).join("");
   renderMeter();
 }
@@ -1113,7 +1310,7 @@ function renderMeter(){
 
 /* ================= actions ================= */
 function saveCall(){
-  const e = { id:uid(), date:$("c-date").value, salesperson:$("c-sp").value.trim(),
+  const e = { id:uid(), date:$("c-date").value, createdBy:S.user.name, salesperson:$("c-sp").value.trim(),
     account:$("c-account").value.trim(), contact:$("c-contact").value.trim(),
     type:$("c-type").value, outcome:$("c-outcome").value, notes:$("c-notes").value.trim() };
   if (!e.account || !e.date){ toast("Account and date are required.", null); return; }
@@ -1123,7 +1320,7 @@ function saveCall(){
   .then(ok => { if (ok){ $("c-account").value=""; $("c-contact").value=""; $("c-notes").value=""; } });
 }
 function saveFu(){
-  const e = { id:uid(), date:todayISO(), account:$("f-account").value.trim(),
+  const e = { id:uid(), date:todayISO(), createdBy:S.user.name, account:$("f-account").value.trim(),
     action:$("f-action").value.trim(), owner:$("f-owner").value.trim(), due:$("f-due").value, completed:"" };
   if (!e.account || !e.action || !e.due){ toast("Account, action and due date are required.", null); return; }
   const body = `FOLLOW-UP LOGGED — ${e.account}\nDue ${e.due}: ${e.action}\nOwner: ${e.owner||"—"}`;
@@ -1132,7 +1329,7 @@ function saveFu(){
   .then(ok => { if (ok){ $("f-account").value=""; $("f-action").value=""; } });
 }
 function saveIssue(){
-  const e = { id:uid(), date:todayISO(), account:$("i-account").value.trim(),
+  const e = { id:uid(), date:todayISO(), createdBy:S.user.name, account:$("i-account").value.trim(),
     category:$("i-cat").value, desc:$("i-desc").value.trim(), severity:$("i-sev").value, status:"Open", resolved:"" };
   if (!e.account || !e.desc){ toast("Account and description are required.", null); return; }
   const body = `ISSUE — ${e.category} (${e.severity})\n${e.account}\n${e.desc}\nLogged by ${S.user.name}`;
@@ -1151,21 +1348,20 @@ function saveBooking(){
   const pax = lines.reduce((s,l)=>s+l.pax,0);
   const usd = lines.filter(l=>l.cur!=="IQD").reduce((s,l)=>s+l.adr*stay,0);
   const iqd = lines.filter(l=>l.cur==="IQD").reduce((s,l)=>s+l.adr*stay,0);
-  const e = { id:uid(), dateBooked:$("b-booked").value, account, salesperson:$("b-sp").value.trim(),
+  const e = { id:uid(), dateBooked:$("b-booked").value, createdBy:S.user.name, account, salesperson:$("b-sp").value.trim(),
     rooms, pax, checkIn:ci, checkOut:co, nights:rooms*stay, lines,
     revenue:usd, revenueIQD:iqd,
     roomType: lines.map(l=>l.type).join("/"),
     payment: [...new Set(lines.map(l=>l.pay))].join("/"),
     notes:$("b-notes").value.trim(),
     segment:$("b-seg").value, status:$("b-status").value };
-  const lineTxt = lines.map((l,i)=>`Room ${i+1}: ${l.type} \u00b7 ${l.pax} pax \u00b7 ${fmtCur(l.cur,l.adr)}/night \u00b7 ${l.pay}`).join("\n");
-  const body = `NEW BOOKING \u2014 ${e.account}\n${rooms} rooms \u00b7 ${pax} pax \u00b7 ${ci} \u2192 ${co} (${e.nights} room nights)\n${lineTxt}\nTotal: ${revParts(usd,iqd)}\n${e.status} \u00b7 ${e.segment}\nBy ${e.salesperson||"\u2014"}${e.notes?`\nNotes: ${e.notes}`:""}`;
+  const body = resEmailBody(e);
   commit(d => {
     const avail = minAvailability(d.bookings, ci, co, Number(d.settings.totalRooms)||87);
     if (rooms > avail) return { error: `Blocked: only ${Math.max(avail,0)} room(s) left across ${ci} \u2192 ${co}.` };
     d.bookings.push(e);
   }, "Booking saved.",
-    d => mailto(d.settings.resTo || d.settings.managerEmail, `Titanic Sales \u2014 new booking: ${e.account}`, withSig(d.settings, body)))
+    d => mailto(d.settings.resTo || d.settings.managerEmail, `Reservation \u2014 ${e.account} \u00b7 ${dm(e.checkIn)}\u2013${dm(e.checkOut)}`, withSigRes(d.settings, body), d.settings.resCc))
   .then(ok => { if (ok){ $("b-account").value=""; $("b-notes").value=""; bkLines=[bkBlankLine()]; renderBkLines(); } });
 }
 
