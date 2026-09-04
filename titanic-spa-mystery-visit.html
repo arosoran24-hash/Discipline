@@ -1,0 +1,720 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><title>Titanic Spa Mystery Visit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --surface-2:#E9EDF3; --line:#D5DBE6;
+  --ink:#101C33; --ink-2:#4E5A70;
+  --navy:#0E2140; --navy-2:#1B3560; --gold:#B8922F; --gold-2:#E3C878;
+  --head-bg:#0E2140; --head-ink:#F4F6FA; --head-line:rgba(244,246,250,.35);
+  --primary:#0E2140; --on-primary:#F4F6FA; --link:#1B3560;
+  --sel-bg:#FBF3DC;
+  --yes:#1E7A4C; --yes-bg:#E3F2EA; --no:#B2382F; --no-bg:#F8E4E1; --na:#6B7689; --na-bg:#E9EDF3;
+  --bar:#E9EDF3; --focus:#2F6FED;
+  --display:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --ui:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1426; --surface:#132038; --surface-2:#1B2B47; --line:#2A3A57;
+    --ink:#E9EEF6; --ink-2:#A3AFC4;
+    --navy:#E9EEF6; --navy-2:#D9BB63; --gold:#D9BB63; --gold-2:#E3C878;
+    --head-bg:#0E2140; --head-ink:#F4F6FA; --head-line:rgba(244,246,250,.3);
+    --primary:#E3C878; --on-primary:#0B1426; --link:#E3C878;
+    --sel-bg:#2E2A17;
+    --yes:#4CC38A; --yes-bg:#133226; --no:#F07A70; --no-bg:#3A1B19; --na:#9AA6BA; --na-bg:#1B2B47;
+    --bar:#1B2B47; --focus:#8AB4FF;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1426; --surface:#132038; --surface-2:#1B2B47; --line:#2A3A57;
+  --ink:#E9EEF6; --ink-2:#A3AFC4;
+  --navy:#E9EEF6; --navy-2:#D9BB63; --gold:#D9BB63; --gold-2:#E3C878;
+  --head-bg:#0E2140; --head-ink:#F4F6FA; --head-line:rgba(244,246,250,.3);
+  --primary:#E3C878; --on-primary:#0B1426; --link:#E3C878;
+  --sel-bg:#2E2A17;
+  --yes:#4CC38A; --yes-bg:#133226; --no:#F07A70; --no-bg:#3A1B19; --na:#9AA6BA; --na-bg:#1B2B47;
+  --bar:#1B2B47; --focus:#8AB4FF;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+.app{max-width:560px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;background:var(--bg)}
+.screen{display:flex;flex-direction:column;flex:1;min-height:100dvh}
+.top{position:sticky;top:0;z-index:5;background:var(--head-bg);color:var(--head-ink);padding:10px 14px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--gold)}
+.top .t{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.1;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top .p{font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;opacity:.9;white-space:nowrap}
+.top button{background:transparent;border:1px solid var(--head-line);color:inherit;border-radius:8px;min-height:36px;padding:0 10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.main{flex:1;padding:18px 16px 32px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:800}
+h1{font-family:var(--display);font-weight:600;font-size:40px;line-height:1;margin:6px 0 12px;text-wrap:balance;color:var(--navy)}
+h2{font-family:var(--display);font-weight:600;font-size:27px;line-height:1.1;margin:0 0 8px;text-wrap:balance;color:var(--navy)}
+h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin:22px 0 8px;font-weight:800}
+p{margin:0 0 12px;max-width:65ch}
+.lead{color:var(--ink-2);font-size:16px}
+.mast{padding:26px 0 10px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.mast .rule{width:44px;height:3px;background:var(--gold);margin:14px 0 0}
+.field{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.field label{font-size:13px;font-weight:700;color:var(--ink-2)}
+input[type=text],input[type=date],input[type=time],textarea{font:inherit;font-size:16px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:100%;max-width:100%}
+input[type=time]{width:auto;min-width:150px}
+textarea{min-height:88px;resize:vertical}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 18px;border-radius:12px;border:1.5px solid transparent;font:inherit;font-weight:800;font-size:16px;cursor:pointer;width:100%;text-decoration:none}
+.btn.primary{background:var(--primary);color:var(--on-primary)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.gold{background:var(--gold);color:#101C33;border-color:var(--gold)}
+.btn[disabled]{opacity:.5;cursor:default}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.linkbtn{background:none;border:0;padding:8px 0;color:var(--link);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.bottom{position:sticky;bottom:0;z-index:4;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.bottom .btn{flex:1;width:auto;min-height:48px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card+.card{margin-top:10px}
+.hub{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.hub li{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+.hub li:focus-visible{outline:3px solid var(--focus)}
+.hub .n{font-family:var(--display);font-size:24px;font-weight:700;color:var(--gold);width:30px;text-align:center;line-height:1;flex:0 0 auto}
+.hub .name{flex:1;font-weight:700;min-width:0}
+.hub .cnt{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.hub li.done{border-color:var(--yes)} .hub li.done .cnt{color:var(--yes)}
+.hub li.part .cnt{color:var(--gold)}
+.do{background:var(--surface-2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:0 10px 10px 0;color:var(--ink);font-size:14.5px;margin:0 0 6px}
+.items{list-style:none;margin:0;padding:0}
+.item{padding:16px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item .q{font-weight:700;font-size:16px;line-height:1.35;display:flex;gap:8px;align-items:flex-start}
+.item .num{color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:600;flex:0 0 auto;min-width:22px}
+.crit{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--no);border:1px solid var(--no);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:2px;white-space:nowrap}
+.hint{font-size:13.5px;color:var(--ink-2);margin:6px 0 0 30px;line-height:1.4}
+.ctl{margin-left:30px}
+.seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.seg button,.chips button{min-height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:15px;cursor:pointer;padding:0 10px;touch-action:manipulation}
+.seg button.yes[aria-pressed="true"]{background:var(--yes-bg);border-color:var(--yes);color:var(--yes)}
+.seg button.no[aria-pressed="true"]{background:var(--no-bg);border-color:var(--no);color:var(--no)}
+.seg button.na[aria-pressed="true"]{background:var(--na-bg);border-color:var(--na);color:var(--na)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips button{flex:1 1 auto;font-weight:600;text-align:center;line-height:1.2;padding:6px 12px}
+.chips button[aria-pressed="true"]{background:var(--sel-bg);border-color:var(--gold);color:var(--ink);font-weight:800}
+.chips.scale button{flex:1 1 0;min-width:40px;padding:0}
+.chips.scale.wide button{min-width:44px;flex:1 1 calc(100% / 6 - 8px)}
+.scale-l{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin:6px 0 0 30px}
+.note-t{background:none;border:0;color:var(--link);font:inherit;font-size:14px;font-weight:700;padding:10px 0 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;margin-left:30px}
+.note{margin:8px 0 0 30px;width:calc(100% - 30px);min-height:72px}
+.ctl input[type=text],.ctl textarea{margin-top:10px}
+.ctl input[type=time]{margin-top:10px}
+.brief ol{padding-left:22px;margin:0 0 14px}
+.brief li{margin:0 0 10px}
+.brief .tests{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 4px;margin:0 0 16px}
+.brief .tests ol{margin:0 0 10px}
+.muted{color:var(--ink-2);font-size:14px}
+.warn{background:var(--no-bg);color:var(--no);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;margin:0 0 12px}
+.ok{background:var(--yes-bg);color:var(--yes);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;margin:0 0 12px}
+.report{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.45;min-height:220px;white-space:pre-wrap}
+.big{display:flex;align-items:baseline;gap:10px}
+.big .pct{font-family:var(--display);font-size:64px;font-weight:700;line-height:1;color:var(--navy);font-variant-numeric:tabular-nums}
+.big .sub{color:var(--ink-2);font-size:14px;font-weight:600}
+.bars{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.bar{display:grid;grid-template-columns:1fr 46px;gap:10px;align-items:center;font-size:14px}
+.bar .lab{display:flex;justify-content:space-between;gap:8px;font-weight:600}
+.bar .lab span:last-child{color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+.bar .trk{grid-column:1/2;height:8px;background:var(--bar);border-radius:4px;overflow:hidden}
+.bar .fil{height:100%;background:var(--gold);border-radius:4px;transition:width .5s ease}
+.bar .fil.low{background:var(--no)} .bar .fil.mid{background:var(--gold)} .bar .fil.high{background:var(--yes)}
+.bar .pc{grid-column:2/3;grid-row:1/3;font-variant-numeric:tabular-nums;font-weight:800;text-align:right;font-size:16px}
+.fails{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.fails li{padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:14.5px}
+.fails li.crit{border-color:var(--no);background:var(--no-bg)}
+.fails .where{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--ink-2);display:block;margin-bottom:2px}
+.fails li.crit .where{color:var(--no)}
+.fails .n{display:block;color:var(--ink-2);font-size:13.5px;margin-top:4px;white-space:pre-wrap}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:14.5px}
+.kv dt{color:var(--ink-2);font-weight:600} .kv dd{margin:0;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.notes p{white-space:pre-wrap;font-size:14.5px}
+.notes .lab{font-weight:800;color:var(--ink-2);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:12px 0 2px}
+.sr{position:absolute;left:-9999px}
+@media (prefers-reduced-motion: reduce){ .bar .fil{transition:none} }
+</style>
+
+<div class="app" id="app">
+
+  <!-- START -->
+  <section class="screen" id="s-start">
+    <div class="main">
+      <div class="mast">
+        <div class="eyebrow">Titanic Hotel &amp; SPA · Sulaymaniyah</div>
+        <h1>Spa Mystery Visit</h1>
+        <p class="lead">Gym, pool, sauna, steam, jacuzzi, ice pool and the Pool Snack bar — 13 stops, about 150 quick taps. Your answers stay on this phone until you send them.</p>
+        <div class="rule"></div>
+      </div>
+      <div id="resume" hidden class="card">
+        <div class="eyebrow">Visit in progress</div>
+        <p id="resume-txt" style="margin:6px 0 12px;font-weight:700"></p>
+        <button class="btn primary" id="b-resume">Continue</button>
+        <button class="linkbtn" id="b-new">Start a new visit instead</button>
+      </div>
+      <div id="newvisit">
+        <div class="field"><label for="f-name">Your name</label><input type="text" id="f-name" autocomplete="name" placeholder="As agreed with the hotel"></div>
+        <div class="field"><label for="f-date">Visit date</label><input type="date" id="f-date"></div>
+        <div class="stack"><button class="btn primary" id="b-start">Start</button></div>
+      </div>
+      <p class="muted" style="margin-top:26px">Manager? <button class="linkbtn" id="b-results" style="padding:0">Open the Results screen</button></p>
+    </div>
+  </section>
+
+  <!-- BRIEFING -->
+  <section class="screen" id="s-brief" hidden>
+    <div class="top"><button id="brief-back">Back</button><div class="t">Before you go</div></div>
+    <div class="main brief">
+      <p class="lead">Read this once. It takes two minutes and it is what makes your visit useful.</p>
+      <ol>
+        <li><strong>You are a normal guest.</strong> Never say you are assessing anyone. If asked, you are trying the spa for a day.</li>
+        <li><strong>Call first</strong> (stop 1), then visit. Use every facility for at least 10 minutes: gym, pool, sauna, steam room, jacuzzi, ice pool. Order something at the Pool Snack bar.</li>
+        <li><strong>Note the times.</strong> Fill this in while you sit — on a lounger or in the changing room, it looks like texting. Your answers are saved on this phone even if you close the browser.</li>
+        <li><strong>Photos</strong> only of signs, equipment or dirt when nobody is around. Never in changing rooms, never of other guests or staff faces.</li>
+        <li><strong>Keep every receipt.</strong> Day pass and anything you order.</li>
+        <li><strong>Scoring:</strong> Yes = fully met the standard. No = not met, even slightly. N/A = you could not check. Whenever you tap No, add a short note saying exactly what you saw and where.</li>
+        <li><strong>When you are done</strong> tap Finish, then Send — it opens WhatsApp with your report. Send it the same day.</li>
+      </ol>
+      <div class="tests">
+        <div class="eyebrow">Six tests to do during the visit</div>
+        <ol>
+          <li>On the phone, ask the opening hours, the women-only hours and the day-pass price.</li>
+          <li>On arrival, ask for a tour or to be shown around.</li>
+          <li>Ask any staff member how long you should stay in the ice pool and how to combine it with the sauna.</li>
+          <li>Ask an attendant for an extra towel — time how long it takes.</li>
+          <li>Make one small, polite complaint (for example ‘the jacuzzi feels a bit cool’ or ‘the sauna is not very hot’) and watch what happens.</li>
+          <li>On your way out, notice whether anyone asks how your visit was.</li>
+        </ol>
+      </div>
+      <p class="muted">Items marked <span class="crit" style="margin:0">Critical</span> are safety or hygiene standards — be strict on those.</p>
+      <div class="stack"><button class="btn primary" id="b-brief-go">I have read it — open the checklist</button></div>
+    </div>
+  </section>
+
+  <!-- HUB -->
+  <section class="screen" id="s-hub" hidden>
+    <div class="top"><button id="hub-back">Home</button><div class="t" id="hub-title">Checklist</div><div class="p" id="hub-prog"></div></div>
+    <div class="main">
+      <p class="muted" style="margin-bottom:12px">Work through the stops in order. <button class="linkbtn" id="b-brief-again" style="padding:0">Read the briefing again</button></p>
+      <ul class="hub" id="hub"></ul>
+    </div>
+    <div class="bottom"><button class="btn primary" id="b-finish">Finish &amp; send</button></div>
+  </section>
+
+  <!-- SECTION -->
+  <section class="screen" id="s-sec" hidden>
+    <div class="top"><button id="sec-back">Stops</button><div class="t" id="sec-title"></div><div class="p" id="sec-prog"></div></div>
+    <div class="main">
+      <div class="eyebrow" id="sec-eyebrow" style="margin-bottom:8px"></div>
+      <div class="do" id="sec-do"></div>
+      <ul class="items" id="sec-items"></ul>
+    </div>
+    <div class="bottom"><button class="btn ghost" id="sec-prev">Previous</button><button class="btn primary" id="sec-next">Next stop</button></div>
+  </section>
+
+  <!-- FINISH -->
+  <section class="screen" id="s-finish" hidden>
+    <div class="top"><button id="fin-back">Stops</button><div class="t">Finish &amp; send</div></div>
+    <div class="main">
+      <div id="fin-status"></div>
+      <div class="stack">
+        <a class="btn gold" id="b-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <button class="btn primary" id="b-share" hidden>Share…</button>
+        <button class="btn ghost" id="b-copy">Copy the report</button>
+      </div>
+      <h3>Your report</h3>
+      <p class="muted">If a button does nothing on your phone, press and hold inside the box below, Select all, Copy, then paste it into WhatsApp.</p>
+      <textarea class="report" id="fin-report" readonly></textarea>
+      <div class="stack"><button class="linkbtn" id="b-fin-edit">Go back and change answers</button></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="screen" id="s-res" hidden>
+    <div class="top"><button id="res-back">Home</button><div class="t">Results</div></div>
+    <div class="main">
+      <div id="res-in">
+        <p class="lead">Paste the WhatsApp report she sent you — the whole message is fine — and open the scoreboard.</p>
+        <textarea id="res-paste" placeholder="Paste the report here…"></textarea>
+        <p id="res-msg" class="warn" hidden style="margin-top:10px"></p>
+        <div class="stack">
+          <button class="btn primary" id="b-res-show">Show the scoreboard</button>
+          <button class="btn ghost" id="b-res-local">Use the answers saved on this phone</button>
+        </div>
+        <p class="muted" style="margin-top:18px">Scoring: Yes = 1, No = 0, N/A and unanswered are left out. Timed items score in steps. Ratings count as x/5, ‘recommend’ as x/10. Critical items are listed first.</p>
+      </div>
+      <div id="res-out" hidden></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ——— Settings ————————————————————————————————————————————————
+// Put the manager's WhatsApp number here in international format without + or spaces,
+// e.g. "9647701234567", and the Send button goes straight to that chat.
+const MANAGER_WHATSAPP = "";
+const STORE_KEY = "tsmv-visit-v1";
+
+// ——— Checklist ————————————————————————————————————————————————
+// k: yn (Yes/No/N/A) · pick (chips, s = score per option, null = N/A; no s = information only)
+//    rate (1–5) · nps (0–10) · text · time.  c: critical.  h: hint shown under the item.
+const SECTIONS = [
+{ id:"phone", n:"Phone enquiry", short:"Phone",
+  do:"Call the hotel a day before or the morning of your visit and ask for the spa (or call the spa direct). Ask about hours, women-only hours, the day-pass price and what to bring. Note who answered.",
+  items:[
+  {id:"p1", k:"time", t:"Time of your call"},
+  {id:"p2", k:"pick", t:"Rings before someone answered", o:["1–3 rings","4–6 rings","7 or more, or had to call again"], s:[1,.5,0]},
+  {id:"p3", k:"yn", t:"Greeting named the hotel or spa and offered help", h:"For example ‘Titanic Spa, good morning, how can I help you?’"},
+  {id:"p4", k:"yn", t:"Spoke clearly and politely — no background chatter, not rushed"},
+  {id:"p5", k:"yn", t:"Gave the opening hours correctly", h:"Correct answer: 06:30 to 23:00 every day"},
+  {id:"p6", k:"yn", t:"Explained the women-only hours correctly when you asked", h:"Test 1. Correct answer: 12:00 to 16:00"},
+  {id:"p7", k:"yn", t:"Quoted a clear day-pass price and said what it includes", h:"Write the price and what is included in your note"},
+  {id:"p8", k:"yn", t:"Told you what to bring and what is provided — towel, locker, robe, slippers"},
+  {id:"p9", k:"yn", t:"Asked if you would like to book, or explained that no booking is needed"},
+  {id:"p10", k:"yn", t:"Ended warmly — thanked you and said they look forward to seeing you"},
+  {id:"p11", k:"text", t:"Who answered (name if given) and the exact price quoted"}
+]},
+{ id:"arrive", n:"Arrival & reception", short:"Arrival",
+  do:"Walk in like a first-time guest. Follow the signs — only ask if you really cannot find the spa. Ask to be shown around (Test 2). Pay for a day pass and keep the receipt.",
+  items:[
+  {id:"a1", k:"time", t:"Time you entered the hotel"},
+  {id:"a2", k:"yn", t:"Signs from the entrance and lobby led you to the spa without asking anyone"},
+  {id:"a3", k:"yn", t:"If you asked, hotel staff gave correct directions and offered to walk you there", h:"N/A if you did not need to ask"},
+  {id:"a4", k:"yn", t:"Spa entrance felt inviting — clean, well lit, pleasant scent, calm music, comfortable temperature"},
+  {id:"a5", k:"pick", t:"How long until someone greeted you at the spa desk", o:["Under 30 seconds","30 seconds to 1 minute","1 to 3 minutes","Over 3 minutes, or had to ask"], s:[1,.66,.33,0]},
+  {id:"a6", k:"yn", t:"Receptionist stood up, smiled and made eye contact"},
+  {id:"a7", k:"yn", t:"Asked your name and used it at least once"},
+  {id:"a8", k:"yn", t:"Offered a tour, or clearly explained where everything is", h:"Test 2 — you asked to be shown around", c:true},
+  {id:"a9", k:"yn", t:"Explained the rules — shower before the pool, swimwear, time limits in sauna and ice pool, no phones in changing rooms"},
+  {id:"a10", k:"yn", t:"Asked about health conditions before you used heat and cold facilities — heart, blood pressure, pregnancy", h:"A safety standard many spas skip. Answer No if nobody asked."},
+  {id:"a11", k:"pick", t:"What you were given without asking", o:["Towel, locker key or band, robe and slippers","Towel and locker key or band","Towel only","Nothing until you asked"], s:[1,.75,.4,0]},
+  {id:"a12", k:"yn", t:"Day-pass payment handled correctly and a receipt offered", h:"Keep the receipt"},
+  {id:"a13", k:"yn", t:"Receptionist looked professional — clean uniform, name badge, tidy hair, not on a phone"},
+  {id:"a14", k:"pick", t:"Your visit fell in", o:["Mixed hours","Women-only hours (12:00–16:00)","Both"]},
+  {id:"a15", k:"text", t:"Receptionist’s name or a short description"}
+]},
+{ id:"change", n:"Changing rooms & showers", short:"Changing rooms",
+  do:"Change, lock your things, use a shower and the vanity area. Look in the corners, behind doors, under benches and at the floor drains.",
+  items:[
+  {id:"c1", k:"yn", t:"Floor dry and clean — no hair, pooled water or rubbish", c:true},
+  {id:"c2", k:"yn", t:"Smelled fresh — air not damp, stuffy or perfumed to cover something"},
+  {id:"c3", k:"yn", t:"Enough free lockers; yours locked and opened first time"},
+  {id:"c4", k:"yn", t:"Benches, hooks and hangers clean, dry and enough for the guests present"},
+  {id:"c5", k:"yn", t:"Shower — hot water within 10 seconds and good pressure"},
+  {id:"c6", k:"yn", t:"Shower drains clear — no water pooling around your feet"},
+  {id:"c7", k:"yn", t:"Shower gel, shampoo and conditioner all stocked", h:"Note the brand"},
+  {id:"c8", k:"yn", t:"Hair dryer working; mirror clean and well lit"},
+  {id:"c9", k:"yn", t:"Vanity stocked — tissues, cotton pads, combs, body lotion, deodorant"},
+  {id:"c10", k:"yn", t:"Toilet clean, with toilet paper, soap and hand towels or a working dryer", c:true},
+  {id:"c11", k:"yn", t:"Fresh towels available without asking, and a bin for used ones"},
+  {id:"c12", k:"yn", t:"Full privacy — doors and curtains close properly, no gaps, nothing pointing in", c:true},
+  {id:"c13", k:"yn", t:"Comfortable temperature and good lighting"},
+  {id:"c14", k:"yn", t:"A cleaning check sheet is displayed and filled in for today", h:"Usually on the back of the door or near the entrance. N/A if there is none."},
+  {id:"c15", k:"text", t:"Anything broken, missing or dirty — say exactly where"}
+]},
+{ id:"gym", n:"Gym", short:"Gym",
+  do:"10 to 15 minutes. Start at least three machines. Lift something. Look for wipes, towels and water. Ask the trainer one question.",
+  items:[
+  {id:"g1", k:"yn", t:"Easy to find; opening hours and gym rules displayed at the entrance"},
+  {id:"g2", k:"yn", t:"A trainer or attendant was present and greeted you"},
+  {id:"g3", k:"yn", t:"Offered an induction, or asked whether you needed help with the equipment"},
+  {id:"g4", k:"pick", t:"Cardio machines not working or marked out of order", o:["None","One","Two","Three or more"], s:[1,.6,.3,0], h:"Try starting each treadmill, bike and cross-trainer for 10 seconds"},
+  {id:"g5", k:"yn", t:"Dumbbells and plates complete, in pairs and racked in order"},
+  {id:"g6", k:"yn", t:"Equipment clean — no sweat marks, dust or smell; upholstery not torn", c:true},
+  {id:"g7", k:"yn", t:"Sanitising wipes, or spray with paper, available at more than one point", c:true},
+  {id:"g8", k:"yn", t:"Fresh towels in the gym and a bin for used ones"},
+  {id:"g9", k:"yn", t:"Drinking water available — dispenser or bottles — with cups"},
+  {id:"g10", k:"yn", t:"Cool, well-ventilated air — not hot, humid or stuffy"},
+  {id:"g11", k:"yn", t:"TV or music working at a comfortable volume"},
+  {id:"g12", k:"yn", t:"Mirrors clean, floor clean, no loose cables or broken parts"},
+  {id:"g13", k:"yn", t:"First aid kit and an emergency contact or phone visible", c:true},
+  {id:"g14", k:"rate", t:"Overall gym impression"},
+  {id:"g15", k:"text", t:"Which machines were broken, dirty or missing parts"}
+]},
+{ id:"pool", n:"Pool", short:"Pool",
+  do:"Swim or sit by the pool for 15 minutes. Watch what the attendant does. Look at the water against the light and along the water line.",
+  items:[
+  {id:"w1", k:"yn", t:"Water crystal clear — you can see the bottom and the lines sharply; nothing floating", c:true},
+  {id:"w2", k:"yn", t:"No harsh chlorine smell; no stinging eyes"},
+  {id:"w3", k:"yn", t:"Water temperature comfortable", h:"Indoor pools are usually 27–29 °C. Note if it felt cold or too warm."},
+  {id:"w4", k:"yn", t:"Pool deck clean and not slippery; no puddles left standing"},
+  {id:"w5", k:"yn", t:"Depth markings, pool rules and no-diving signs visible"},
+  {id:"w6", k:"yn", t:"A lifeguard or attendant was present and actually watching the pool — not on a phone", c:true},
+  {id:"w7", k:"yn", t:"Rescue equipment visible — life ring, reach pole, first aid", c:true},
+  {id:"w8", k:"yn", t:"Loungers clean and neatly arranged, with towels on them or nearby"},
+  {id:"w9", k:"yn", t:"Enough free loungers; cushions clean and dry"},
+  {id:"w10", k:"yn", t:"Poolside showers working and a ‘shower before swimming’ sign present"},
+  {id:"w11", k:"yn", t:"Towel station stocked; used-towel basket not overflowing"},
+  {id:"w12", k:"yn", t:"Air temperature and humidity comfortable indoors, or shade available outdoors"},
+  {id:"w13", k:"yn", t:"You saw staff check or test the water during your stay, or a test log is displayed", h:"N/A if you could not tell"},
+  {id:"w14", k:"rate", t:"Overall pool impression"},
+  {id:"w15", k:"text", t:"Pool notes"}
+]},
+{ id:"heat", n:"Sauna & steam room", short:"Sauna & steam",
+  do:"Use both. Check the thermometer and timer. Look at grout, corners, under the benches and at the door seals.",
+  items:[
+  {id:"h1", k:"yn", t:"Sauna was already hot when you entered — not switched off or still warming up", c:true},
+  {id:"h2", k:"yn", t:"Sauna thermometer and hourglass or timer present and working"},
+  {id:"h3", k:"yn", t:"Sauna benches clean and dry; wood in good condition — no stains, splinters or broken slats"},
+  {id:"h4", k:"yn", t:"Sauna smelled of clean wood — no sweat, mould or chemical smell"},
+  {id:"h5", k:"yn", t:"Sauna light working; door opens easily from inside", c:true},
+  {id:"h6", k:"yn", t:"Water bucket and ladle clean and filled", h:"N/A if not provided"},
+  {id:"h7", k:"yn", t:"Sauna rules and health warning displayed — maximum time, heart, blood pressure, pregnancy"},
+  {id:"h8", k:"yn", t:"Steam room producing thick steam and properly warm", c:true},
+  {id:"h9", k:"yn", t:"Steam room tiles, seats and corners clean — no mould, black grout or slime", c:true},
+  {id:"h10", k:"yn", t:"Steam room floor not slippery; water draining"},
+  {id:"h11", k:"yn", t:"Pleasant or neutral smell in the steam room — no chemical or drain smell"},
+  {id:"h12", k:"yn", t:"Steam room light working; door opens easily from inside"},
+  {id:"h13", k:"yn", t:"Cold shower or rinse point right outside and working"},
+  {id:"h14", k:"yn", t:"Steam room rules and health warning displayed"},
+  {id:"h15", k:"pick", t:"Which did you use", o:["Sauna only","Steam room only","Both"]},
+  {id:"h16", k:"text", t:"Sauna and steam notes"}
+]},
+{ id:"jacuzzi", n:"Jacuzzi", short:"Jacuzzi",
+  do:"10 minutes in. Turn the jets on. Look along the water line for foam or a scum ring.",
+  items:[
+  {id:"j1", k:"yn", t:"Jets working; the controls were easy to find or were explained"},
+  {id:"j2", k:"yn", t:"Water clear — no foam line, scum ring or floating debris", c:true},
+  {id:"j3", k:"yn", t:"Water comfortably hot", h:"Usually 36–40 °C. Answer No if lukewarm."},
+  {id:"j4", k:"yn", t:"Steps and handrail secure; surfaces around it not slippery", c:true},
+  {id:"j5", k:"yn", t:"Maximum-time and health warning sign displayed"},
+  {id:"j6", k:"yn", t:"Surroundings clean — no rubbish or used towels left around"},
+  {id:"j7", k:"yn", t:"Not overcrowded — you could use it within a few minutes"},
+  {id:"j8", k:"text", t:"Jacuzzi notes"}
+]},
+{ id:"ice", n:"Ice pool", short:"Ice pool",
+  do:"Before you get in, ask a staff member how long to stay in and how to combine it with the sauna (Test 3). Then try it.",
+  items:[
+  {id:"i1", k:"yn", t:"Water was truly cold — the chiller or ice was working", h:"It should feel ice-cold, roughly 5–15 °C. If it felt like ordinary cool water, answer No.", c:true},
+  {id:"i2", k:"yn", t:"Water clean and clear; nothing floating"},
+  {id:"i3", k:"yn", t:"Steps or ladder and handrail secure; surface not slippery", c:true},
+  {id:"i4", k:"yn", t:"Thermometer displayed"},
+  {id:"i5", k:"yn", t:"Rules and health warning displayed — maximum 1 to 3 minutes, heart and blood-pressure caution"},
+  {id:"i6", k:"yn", t:"Staff explained how to use it — sauna, then ice, then rest — and for how long", h:"Test 3. Answer No if they guessed or did not know."},
+  {id:"i7", k:"yn", t:"A towel and a warm place to rest nearby"},
+  {id:"i8", k:"yn", t:"Floor around it dry and draining"},
+  {id:"i9", k:"text", t:"Ice pool notes — what exactly did staff say?"}
+]},
+{ id:"snack", n:"Pool Snack bar", short:"Pool Snack",
+  do:"Order one drink and, if you can, one snack. Time everything. Check the bill line by line against the menu.",
+  items:[
+  {id:"b1", k:"yn", t:"Bar open and staffed when you went", c:true},
+  {id:"b2", k:"yn", t:"Menu offered — clean, with prices"},
+  {id:"b3", k:"pick", t:"Greeted within", o:["1 minute","1 to 3 minutes","3 to 5 minutes","Over 5 minutes, or had to call someone"], s:[1,.66,.33,0]},
+  {id:"b4", k:"yn", t:"Staff knew the menu and took your order correctly"},
+  {id:"b5", k:"pick", t:"Drink served within", o:["5 minutes","5 to 10 minutes","Over 10 minutes"], s:[1,.5,0]},
+  {id:"b6", k:"pick", t:"Food served within", o:["15 minutes","15 to 25 minutes","Over 25 minutes","Did not order food"], s:[1,.5,0,null]},
+  {id:"b7", k:"yn", t:"Drink fresh and at the right temperature; glass clean; napkin and straw provided"},
+  {id:"b8", k:"yn", t:"Food fresh, hot, well presented and tasted good", h:"N/A if you did not order food"},
+  {id:"b9", k:"yn", t:"Staff came back to check on you"},
+  {id:"b10", k:"yn", t:"Table or counter clean; ashtrays clean if smoking is allowed there"},
+  {id:"b11", k:"yn", t:"Bill correct and matched the menu prices", c:true},
+  {id:"b12", k:"yn", t:"Could pay the way you wanted — cash or card — and a receipt was given"},
+  {id:"b13", k:"yn", t:"Bar staff looked professional and were friendly"},
+  {id:"b14", k:"text", t:"What you ordered, the prices, and the timings"}
+]},
+{ id:"staff", n:"Staff & service", short:"Staff",
+  do:"Answer for the whole visit. Do Test 4 (extra towel) and Test 5 (small complaint) before you leave.",
+  items:[
+  {id:"s1", k:"yn", t:"Every staff member you saw wore a clean uniform with a name badge"},
+  {id:"s2", k:"yn", t:"Staff greeted you each time you passed — eye contact and a smile"},
+  {id:"s3", k:"pick", t:"Staff could talk with you comfortably in", o:["Kurdish, Arabic and English","Two of those","One only","They struggled to communicate"], s:[1,.75,.5,0]},
+  {id:"s4", k:"yn", t:"Extra towel arrived within 3 minutes of asking", h:"Test 4", c:true},
+  {id:"s5", k:"pick", t:"How your small complaint was handled", h:"Test 5", o:["Apology, fixed it, and came back to check","Apology and fixed it","Acknowledged, but nothing was done","Ignored, or argued with you"], s:[1,.75,.3,0], c:true},
+  {id:"s6", k:"yn", t:"Staff answered your questions confidently, without guessing"},
+  {id:"s7", k:"yn", t:"Nobody was on a personal phone, chatting in groups or ignoring guests"},
+  {id:"s8", k:"yn", t:"Staff offered help before you asked — water, a towel, a lounger"},
+  {id:"s9", k:"yn", t:"You felt completely comfortable and respected as a woman — privacy kept, no staring, no over-familiarity", c:true},
+  {id:"s10", k:"yn", t:"During women-only hours, no men were in the area and female staff were on the floor", h:"N/A if you were not there between 12:00 and 16:00"},
+  {id:"s11", k:"rate", t:"Friendliness"},
+  {id:"s12", k:"rate", t:"Professionalism"},
+  {id:"s13", k:"text", t:"Name or describe the best staff member, and the weakest"}
+]},
+{ id:"safe", n:"Safety & cleanliness", short:"Safety",
+  do:"Walk the whole area once at the end, looking down (floors, drains) and up (ceilings, mould, wires).",
+  items:[
+  {id:"f1", k:"yn", t:"Wet-floor signs used where floors were wet; no slip hazards", c:true},
+  {id:"f2", k:"yn", t:"Emergency exits marked and not blocked", c:true},
+  {id:"f3", k:"yn", t:"A first aid kit or emergency number visible somewhere in the spa"},
+  {id:"f4", k:"yn", t:"Hand sanitiser available"},
+  {id:"f5", k:"yn", t:"No mould, rust, broken tiles, loose fittings or peeling paint anywhere", h:"Say where in your note"},
+  {id:"f6", k:"yn", t:"No overflowing bins anywhere"},
+  {id:"f7", k:"yn", t:"No exposed wires; hair dryers and sockets kept away from water"},
+  {id:"f8", k:"yn", t:"Children present were supervised, and rules for children are displayed", h:"N/A if no children"},
+  {id:"f9", k:"yn", t:"Every area you visited was as clean as you would expect in a five-star hotel"},
+  {id:"f10", k:"rate", t:"Overall cleanliness"},
+  {id:"f11", k:"text", t:"Exact locations of anything unsafe or dirty"}
+]},
+{ id:"leave", n:"Leaving", short:"Leaving",
+  do:"Return your key and towel. Notice whether anyone asks how it was (Test 6).",
+  items:[
+  {id:"l1", k:"yn", t:"Easy to return the locker key or band and towels — a clear place for it"},
+  {id:"l2", k:"yn", t:"Receptionist asked how your visit was", h:"Test 6"},
+  {id:"l3", k:"yn", t:"Thanked you, used your name and invited you back, or mentioned memberships and offers"},
+  {id:"l4", k:"yn", t:"Nothing left to chase — no waiting, no billing confusion"},
+  {id:"l5", k:"yn", t:"Exit route clean and signposted"},
+  {id:"l6", k:"time", t:"Time you left"},
+  {id:"l7", k:"text", t:"Anything that happened on the way out"}
+]},
+{ id:"verdict", n:"Your verdict", short:"Verdict",
+  do:"Fill this in within an hour of leaving, while it is fresh.",
+  items:[
+  {id:"v1", k:"rate", t:"Facilities overall"},
+  {id:"v2", k:"rate", t:"Staff overall"},
+  {id:"v3", k:"rate", t:"Cleanliness overall"},
+  {id:"v4", k:"rate", t:"Value for money"},
+  {id:"v5", k:"nps", t:"How likely are you to recommend it to a friend"},
+  {id:"v6", k:"text", t:"The best three things"},
+  {id:"v7", k:"text", t:"The three things to fix first"},
+  {id:"v8", k:"text", t:"Anything that would stop you coming back"},
+  {id:"v9", k:"pick", t:"Did anyone seem to suspect you were assessing them", o:["No","Maybe","Yes"]},
+  {id:"v10", k:"text", t:"Anything else"}
+]}
+];
+
+const ITEMS = {}; SECTIONS.forEach((s,si)=>s.items.forEach(it=>{ITEMS[it.id]={it,si};}));
+const isRequired = it => it.k!=="text";
+const isScored = it => it.k==="yn"||it.k==="rate"||it.k==="nps"||(it.k==="pick"&&Array.isArray(it.s));
+
+// ——— State ————————————————————————————————————————————————
+let S = {name:"", date:"", ans:{}};
+let cur = 0;
+function load(){ try{ const raw=localStorage.getItem(STORE_KEY); if(raw){ const o=JSON.parse(raw); if(o&&typeof o==="object"&&o.ans) S=o; } }catch(e){} }
+let saveT=null;
+function save(){ clearTimeout(saveT); saveT=setTimeout(()=>{ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} },150); }
+function ans(id){ return S.ans[id]||null; }
+function setV(id,v){ const a=S.ans[id]||(S.ans[id]={}); if(v===null||v===undefined||v===""){ delete a.v; } else a.v=v; if(!("v" in a)&&!a.n) delete S.ans[id]; save(); }
+function setN(id,n){ const a=S.ans[id]||(S.ans[id]={}); n=(n||"").trim(); if(n) a.n=n; else delete a.n; if(!("v" in a)&&!a.n) delete S.ans[id]; save(); }
+function hasV(id){ const a=ans(id); return !!(a && "v" in a && a.v!=="" && a.v!==null); }
+
+// ——— Scoring ————————————————————————————————————————————————
+function itemScore(it,a){
+  if(!isScored(it)||!a||!("v" in a)) return null;
+  const v=a.v;
+  if(it.k==="yn") return v==="Y"?1:(v==="N"?0:null);
+  if(it.k==="rate") return typeof v==="number"?v/5:null;
+  if(it.k==="nps") return typeof v==="number"?v/10:null;
+  if(it.k==="pick"){ const s=it.s[v]; return (s===null||s===undefined)?null:s; }
+  return null;
+}
+function optLabel(it,a){ if(!a||!("v" in a)) return ""; if(it.k==="pick") return it.o[a.v]||""; if(it.k==="yn") return a.v==="Y"?"Yes":a.v==="N"?"No":"N/A"; if(it.k==="rate") return a.v+"/5"; if(it.k==="nps") return a.v+"/10"; return String(a.v); }
+function compute(st){
+  const R={pts:0,max:0,unans:0,req:0,done:0,sections:[],crit:[],fails:[],partials:[],ratings:[],notes:[],times:{},info:{}};
+  SECTIONS.forEach((sec,si)=>{
+    const s={id:sec.id,n:sec.n,short:sec.short,pts:0,max:0,unans:0,req:0,done:0,notes:[]};
+    sec.items.forEach(it=>{
+      const a=st.ans[it.id];
+      if(isRequired(it)){ s.req++; if(a&&"v" in a&&a.v!==""&&a.v!==null) s.done++; else s.unans++; }
+      if(it.k==="time"&&a&&a.v) R.times[it.id]=a.v;
+      if(it.k==="pick"&&!Array.isArray(it.s)&&a&&"v" in a) R.info[it.id]=it.o[a.v];
+      const sc=itemScore(it,a);
+      if(sc!==null){ s.pts+=sc; s.max++;
+        const row={sec:sec.short,secId:sec.id,id:it.id,t:it.t,label:optLabel(it,a),note:a.n||"",crit:!!it.c};
+        if(sc===0){ if(it.c) R.crit.push(row); else R.fails.push(row); }
+        else if(sc<1 && it.k==="pick"){ R.partials.push(row); }
+      }
+      if(it.k==="rate"||it.k==="nps"){ if(a&&"v" in a) R.ratings.push({sec:sec.short,t:it.t,v:a.v,of:it.k==="rate"?5:10}); }
+      const noteText = it.k==="text" ? (a&&a.v?String(a.v):"") : (a&&a.n?a.n:"");
+      if(noteText){ s.notes.push({t:it.t,n:noteText,id:it.id}); R.notes.push({sec:sec.short,secId:sec.id,t:it.t,n:noteText,id:it.id}); }
+    });
+    s.pct = s.max? Math.round(s.pts/s.max*100) : null;
+    R.pts+=s.pts; R.max+=s.max; R.unans+=s.unans; R.req+=s.req; R.done+=s.done;
+    R.sections.push(s);
+  });
+  R.pct = R.max? Math.round(R.pts/R.max*100) : null;
+  return R;
+}
+
+// ——— Encoding ————————————————————————————————————————————————
+function b64e(str){ const bytes=new TextEncoder().encode(str); let bin=""; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function b64d(s){ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4) s+="="; const bin=atob(s); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
+function encode(st){ const a={}; Object.keys(st.ans).forEach(id=>{ const x=st.ans[id]; if(!ITEMS[id]) return; const arr=[]; arr.push(("v" in x)?x.v:null); if(x.n) arr.push(x.n); a[id]=arr; }); return "TSMV1."+b64e(JSON.stringify({v:1,n:st.name||"",d:st.date||"",a})); }
+function decode(text){ const m=/TSMV1\.([A-Za-z0-9_-]+)/.exec(text||""); if(!m) return null; try{ const o=JSON.parse(b64d(m[1])); if(!o||o.v!==1||typeof o.a!=="object") return null; const st={name:String(o.n||""),date:String(o.d||""),ans:{}}; Object.keys(o.a).forEach(id=>{ if(!ITEMS[id]) return; const arr=o.a[id]; if(!Array.isArray(arr)) return; const x={}; if(arr[0]!==null&&arr[0]!==undefined) x.v=arr[0]; if(typeof arr[1]==="string"&&arr[1]) x.n=arr[1]; st.ans[id]=x; }); return st; }catch(e){ return null; } }
+
+// ——— Report text ————————————————————————————————————————————————
+function fmtPts(x){ return (Math.round(x*10)/10).toString(); }
+function buildReport(st){
+  const R=compute(st); const L=[];
+  L.push("*TITANIC SPA — MYSTERY VISIT*");
+  L.push("Shopper: "+(st.name||"—"));
+  let when="Date: "+(st.date||"—"); if(R.times.a1||R.times.l6) when+=" · In "+(R.times.a1||"—")+" · Out "+(R.times.l6||"—"); L.push(when);
+  if(R.info.a14) L.push("Hours: "+R.info.a14);
+  if(R.times.p1) L.push("Phone call at "+R.times.p1);
+  L.push("");
+  L.push("*OVERALL "+(R.pct===null?"—":R.pct+"%")+"*  ("+fmtPts(R.pts)+" of "+R.max+" points · "+R.done+"/"+R.req+" answered)");
+  L.push("");
+  L.push("*BY STOP*");
+  R.sections.forEach(s=>{ if(s.max) L.push(s.short+" — "+s.pct+"% ("+fmtPts(s.pts)+"/"+s.max+")"+(s.unans?" · "+s.unans+" unanswered":"")); else L.push(s.short+" — no scored answers"); });
+  const bullet=(r)=>"• "+r.sec+": "+r.t+(r.label&&r.label!=="No"?" — "+r.label:"")+(r.note?"\n   ↳ "+r.note:"");
+  L.push(""); L.push("*CRITICAL FAILS ("+R.crit.length+")*"); if(R.crit.length) R.crit.forEach(r=>L.push(bullet(r))); else L.push("None");
+  L.push(""); L.push("*OTHER FAILS ("+R.fails.length+")*"); if(R.fails.length) R.fails.forEach(r=>L.push(bullet(r))); else L.push("None");
+  if(R.partials.length){ L.push(""); L.push("*PARTIAL ("+R.partials.length+")*"); R.partials.forEach(r=>L.push(bullet(r))); }
+  if(R.ratings.length){ L.push(""); L.push("*RATINGS*"); L.push(R.ratings.map(r=>r.t+" "+r.v+"/"+r.of).join(" · ")); }
+  const vNotes=R.notes.filter(n=>n.secId==="verdict"); const oNotes=R.notes.filter(n=>n.secId!=="verdict");
+  if(oNotes.length){ L.push(""); L.push("*NOTES*"); let last=""; oNotes.forEach(n=>{ if(n.sec!==last){ L.push("_"+n.sec+"_"); last=n.sec; } L.push("• "+n.t+": "+n.n); }); }
+  if(vNotes.length||R.info.v9){ L.push(""); L.push("*VERDICT*"); vNotes.forEach(n=>L.push(n.t+": "+n.n)); if(R.info.v9) L.push("Suspected an assessment: "+R.info.v9); }
+  L.push(""); L.push("Import code for the Results screen:"); L.push(encode(st));
+  return L.join("\n");
+}
+
+// ——— UI helpers ————————————————————————————————————————————————
+const $=id=>document.getElementById(id);
+function el(tag,cls,text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
+const screens=["s-start","s-brief","s-hub","s-sec","s-finish","s-res"];
+function show(id){ screens.forEach(s=>{ $(s).hidden = s!==id; }); window.scrollTo(0,0); }
+function todayISO(){ const d=new Date(); const p=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+function secProgress(sec){ let req=0,done=0; sec.items.forEach(it=>{ if(isRequired(it)){ req++; if(hasV(it.id)) done++; } }); return {req,done}; }
+function totalProgress(){ let req=0,done=0; SECTIONS.forEach(s=>{ const p=secProgress(s); req+=p.req; done+=p.done; }); return {req,done}; }
+
+// ——— Start ————————————————————————————————————————————————
+function renderStart(){
+  const started = !!(S.name || Object.keys(S.ans).length);
+  $("resume").hidden = !started; $("newvisit").hidden = started;
+  if(started){ const p=totalProgress(); $("resume-txt").textContent=(S.name||"Unnamed")+" · "+(S.date||"no date")+" · "+p.done+" of "+p.req+" answered"; }
+  if(!$("f-date").value) $("f-date").value=todayISO();
+}
+$("b-start").addEventListener("click",()=>{ S.name=($("f-name").value||"").trim()||"Shopper"; S.date=$("f-date").value||todayISO(); save(); show("s-brief"); });
+$("b-resume").addEventListener("click",()=>{ renderHub(); show("s-hub"); });
+let newArmed=false;
+$("b-new").addEventListener("click",()=>{ if(!newArmed){ newArmed=true; $("b-new").textContent="Tap again to erase this phone’s answers and start new"; setTimeout(()=>{ newArmed=false; $("b-new").textContent="Start a new visit instead"; },4000); return; } newArmed=false; $("b-new").textContent="Start a new visit instead"; S={name:"",date:"",ans:{}}; try{localStorage.removeItem(STORE_KEY);}catch(e){} $("f-name").value=""; $("f-date").value=todayISO(); renderStart(); });
+$("b-results").addEventListener("click",()=>{ show("s-res"); });
+$("brief-back").addEventListener("click",()=>{ renderStart(); show("s-start"); });
+$("b-brief-go").addEventListener("click",()=>{ renderHub(); show("s-hub"); });
+$("b-brief-again").addEventListener("click",()=>{ show("s-brief"); });
+$("hub-back").addEventListener("click",()=>{ renderStart(); show("s-start"); });
+$("res-back").addEventListener("click",()=>{ renderStart(); show("s-start"); });
+
+// ——— Hub ————————————————————————————————————————————————
+function renderHub(){
+  const ul=$("hub"); ul.textContent="";
+  SECTIONS.forEach((sec,i)=>{
+    const p=secProgress(sec);
+    const li=el("li"); li.tabIndex=0; li.setAttribute("role","button");
+    if(p.done===p.req) li.classList.add("done"); else if(p.done>0) li.classList.add("part");
+    li.appendChild(el("span","n",String(i+1)));
+    li.appendChild(el("span","name",sec.n));
+    li.appendChild(el("span","cnt",p.done+"/"+p.req));
+    const go=()=>{ openSection(i); };
+    li.addEventListener("click",go); li.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } });
+    ul.appendChild(li);
+  });
+  const t=totalProgress(); $("hub-prog").textContent=t.done+"/"+t.req; $("hub-title").textContent=S.name?S.name+"’s visit":"Checklist";
+}
+$("b-finish").addEventListener("click",()=>{ renderFinish(); show("s-finish"); });
+
+// ——— Section ————————————————————————————————————————————————
+function openSection(i){ cur=i; renderSection(); show("s-sec"); }
+function updateSecProg(){ const p=secProgress(SECTIONS[cur]); $("sec-prog").textContent=p.done+"/"+p.req; }
+function renderSection(){
+  const sec=SECTIONS[cur];
+  const req=sec.items.filter(isRequired).length;
+  $("sec-title").textContent=sec.n; $("sec-eyebrow").textContent="Stop "+(cur+1)+" of "+SECTIONS.length+" · "+req+" items"; $("sec-do").textContent=sec.do;
+  $("sec-prev").disabled = cur===0; $("sec-next").textContent = cur===SECTIONS.length-1 ? "Finish" : "Next stop";
+  const ul=$("sec-items"); ul.textContent="";
+  sec.items.forEach((it,idx)=>ul.appendChild(renderItem(it,idx+1)));
+  updateSecProg();
+}
+function renderItem(it,num){
+  const li=el("li","item"); li.dataset.id=it.id;
+  const q=el("div","q"); q.appendChild(el("span","num",num+"."));
+  const qt=el("span"); qt.textContent=it.t; if(it.c){ qt.appendChild(el("span","crit","Critical")); } q.appendChild(qt); li.appendChild(q);
+  if(it.h) li.appendChild(el("div","hint",it.h));
+  const ctl=el("div","ctl"); li.appendChild(ctl);
+  const a=ans(it.id);
+  let noteBtn=null, noteTa=null;
+  const ensureNote=(open)=>{ if(!noteTa) return; if(open){ noteTa.hidden=false; noteBtn.hidden=true; } };
+  if(it.k==="yn"){
+    const seg=el("div","seg"); seg.setAttribute("role","group"); seg.setAttribute("aria-label",it.t);
+    [["Y","Yes","yes"],["N","No","no"],["X","N/A","na"]].forEach(([v,lab,cls])=>{
+      const b=el("button",cls,lab); b.type="button"; b.setAttribute("aria-pressed", a&&a.v===v ? "true":"false");
+      b.addEventListener("click",()=>{ const on=b.getAttribute("aria-pressed")==="true"; seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed","false")); if(on){ setV(it.id,null); } else { b.setAttribute("aria-pressed","true"); setV(it.id,v); if(v==="N") ensureNote(true); } updateSecProg(); });
+      seg.appendChild(b);
+    });
+    ctl.appendChild(seg);
+  } else if(it.k==="pick"||it.k==="rate"||it.k==="nps"){
+    const chips=el("div","chips"+(it.k==="rate"?" scale":it.k==="nps"?" scale wide":"")); chips.setAttribute("role","group"); chips.setAttribute("aria-label",it.t);
+    let opts; if(it.k==="pick") opts=it.o.map((o,i)=>[i,o]); else if(it.k==="rate") opts=[1,2,3,4,5].map(n=>[n,String(n)]); else opts=[0,1,2,3,4,5,6,7,8,9,10].map(n=>[n,String(n)]);
+    opts.forEach(([v,lab])=>{ const b=el("button",null,lab); b.type="button"; b.setAttribute("aria-pressed", a&&a.v===v?"true":"false");
+      b.addEventListener("click",()=>{ const on=b.getAttribute("aria-pressed")==="true"; chips.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed","false")); if(on){ setV(it.id,null); } else { b.setAttribute("aria-pressed","true"); setV(it.id,v); if(it.k==="pick"&&Array.isArray(it.s)&&it.s[v]===0) ensureNote(true); } updateSecProg(); });
+      chips.appendChild(b); });
+    ctl.appendChild(chips);
+    if(it.k==="rate"){ const l=el("div","scale-l"); l.appendChild(el("span",null,"1 = poor")); l.appendChild(el("span",null,"5 = excellent")); li.appendChild(l); }
+    if(it.k==="nps"){ const l=el("div","scale-l"); l.appendChild(el("span",null,"0 = never")); l.appendChild(el("span",null,"10 = definitely")); li.appendChild(l); }
+  } else if(it.k==="time"){
+    const inp=document.createElement("input"); inp.type="time"; if(a&&a.v) inp.value=a.v; inp.setAttribute("aria-label",it.t);
+    inp.addEventListener("change",()=>{ setV(it.id,inp.value||null); updateSecProg(); }); ctl.appendChild(inp);
+  } else if(it.k==="text"){
+    const ta=document.createElement("textarea"); ta.rows=3; ta.placeholder="Optional — write what you saw"; if(a&&a.v) ta.value=a.v; ta.setAttribute("aria-label",it.t);
+    ta.addEventListener("input",()=>{ setV(it.id,ta.value.trim()||null); }); ctl.appendChild(ta);
+  }
+  if(it.k!=="text"){
+    noteBtn=el("button","note-t","Add a note"); noteBtn.type="button";
+    noteTa=document.createElement("textarea"); noteTa.className="note"; noteTa.placeholder="What exactly did you see, and where?"; noteTa.setAttribute("aria-label","Note for: "+it.t);
+    if(a&&a.n){ noteTa.value=a.n; noteTa.hidden=false; noteBtn.hidden=true; } else { noteTa.hidden=true; }
+    noteBtn.addEventListener("click",()=>{ noteTa.hidden=false; noteBtn.hidden=true; noteTa.focus(); });
+    noteTa.addEventListener("input",()=>{ setN(it.id,noteTa.value); });
+    li.appendChild(noteBtn); li.appendChild(noteTa);
+  }
+  return li;
+}
+$("sec-back").addEventListener("click",()=>{ renderHub(); show("s-hub"); });
+$("sec-prev").addEventListener("click",()=>{ if(cur>0) openSection(cur-1); });
+$("sec-next").addEventListener("click",()=>{ if(cur<SECTIONS.length-1) openSection(cur+1); else { renderFinish(); show("s-finish"); } });
+
+// ——— Finish ————————————————————————————————————————————————
+let reportText="";
+function renderFinish(){
+  const R=compute(S); const st=$("fin-status"); st.textContent="";
+  if(R.unans>0){ const parts=R.sections.filter(s=>s.unans).map(s=>s.short+" "+s.unans); const w=el("div","warn"); w.textContent=R.unans+" unanswered ("+parts.join(", ")+"). Send anyway, or go back and finish them."; st.appendChild(w); }
+  else { const o=el("div","ok"); o.textContent="All "+R.req+" items answered. Thank you — send it now."; st.appendChild(o); }
+  reportText=buildReport(S); $("fin-report").value=reportText;
+  const wa=MANAGER_WHATSAPP?("https://wa.me/"+MANAGER_WHATSAPP+"?text="):"https://wa.me/?text="; $("b-wa").href=wa+encodeURIComponent(reportText);
+  let canShare=false; try{ canShare = !!(navigator.share && (!navigator.canShare || navigator.canShare({text:reportText}))); }catch(e){} $("b-share").hidden=!canShare;
+}
+$("b-share").addEventListener("click",async()=>{ try{ await navigator.share({title:"Titanic Spa — Mystery Visit report",text:reportText}); }catch(e){} });
+$("b-copy").addEventListener("click",async()=>{
+  const b=$("b-copy"); let ok=false;
+  try{ await navigator.clipboard.writeText(reportText); ok=true; }catch(e){}
+  if(!ok){ try{ const ta=$("fin-report"); ta.focus(); ta.select(); ta.setSelectionRange(0,ta.value.length); ok=document.execCommand("copy"); }catch(e){} }
+  b.textContent = ok ? "Copied — now paste it into WhatsApp" : "Could not copy — select the text below"; setTimeout(()=>{ b.textContent="Copy the report"; },3500);
+});
+$("fin-report").addEventListener("focus",function(){ try{ this.select(); }catch(e){} });
+$("fin-back").addEventListener("click",()=>{ renderHub(); show("s-hub"); });
+$("b-fin-edit").addEventListener("click",()=>{ renderHub(); show("s-hub"); });
+
+// ——— Results ————————————————————————————————————————————————
+function renderResults(st){
+  const R=compute(st); const out=$("res-out"); out.textContent=""; out.hidden=false; $("res-in").hidden=true;
+  const head=el("div","card");
+  head.appendChild(el("div","eyebrow","Mystery visit · "+(st.date||"no date")));
+  head.appendChild(el("h2",null,st.name||"Unnamed shopper"));
+  const big=el("div","big"); big.appendChild(el("span","pct",R.pct===null?"—":R.pct+"%")); big.appendChild(el("span","sub",fmtPts(R.pts)+" of "+R.max+" points · "+R.done+"/"+R.req+" answered")); head.appendChild(big);
+  const meta=[]; if(R.times.a1||R.times.l6) meta.push("In "+(R.times.a1||"—")+" · Out "+(R.times.l6||"—")); if(R.info.a14) meta.push(R.info.a14); if(R.times.p1) meta.push("Called at "+R.times.p1); if(meta.length) head.appendChild(el("p","muted",meta.join(" · ")));
+  out.appendChild(head);
+  const bc=el("div","card"); bc.appendChild(el("div","eyebrow","By stop")); const bars=el("div","bars");
+  R.sections.forEach(s=>{ if(!s.max) return; const b=el("div","bar"); const lab=el("div","lab"); lab.appendChild(el("span",null,s.n)); lab.appendChild(el("span",null,fmtPts(s.pts)+"/"+s.max+(s.unans?" · "+s.unans+" open":""))); b.appendChild(lab); const trk=el("div","trk"); const fil=el("div","fil "+(s.pct<60?"low":s.pct<85?"mid":"high")); fil.style.width=s.pct+"%"; trk.appendChild(fil); b.appendChild(trk); b.appendChild(el("div","pc",s.pct+"%")); bars.appendChild(b); });
+  bc.appendChild(bars); out.appendChild(bc);
+  const failList=(title,rows,crit)=>{ const c=el("div","card"); c.appendChild(el("div","eyebrow",title+" ("+rows.length+")")); if(!rows.length){ c.appendChild(el("p","muted","None")); } else { const ul=el("ul","fails"); rows.forEach(r=>{ const li=el("li",crit?"crit":""); li.appendChild(el("span","where",r.sec)); li.appendChild(document.createTextNode(r.t+(r.label&&r.label!=="No"?" — "+r.label:""))); if(r.note) li.appendChild(el("span","n",r.note)); ul.appendChild(li); }); c.appendChild(ul); } out.appendChild(c); };
+  failList("Critical fails",R.crit,true); failList("Other fails",R.fails,false); if(R.partials.length) failList("Partial",R.partials,false);
+  if(R.ratings.length){ const c=el("div","card"); c.appendChild(el("div","eyebrow","Ratings")); const dl=el("dl","kv"); R.ratings.forEach(r=>{ dl.appendChild(el("dt",null,r.t)); dl.appendChild(el("dd",null,r.v+"/"+r.of)); }); c.appendChild(dl); out.appendChild(c); }
+  if(R.notes.length){ const c=el("div","card notes"); c.appendChild(el("div","eyebrow","Notes & verdict")); let last=""; R.notes.forEach(n=>{ if(n.sec!==last){ c.appendChild(el("div","lab",n.sec)); last=n.sec; } const p=el("p"); const b=el("strong",null,n.t+": "); p.appendChild(b); p.appendChild(document.createTextNode(n.n)); c.appendChild(p); }); if(R.info.v9){ c.appendChild(el("div","lab","Cover")); c.appendChild(el("p",null,"Suspected an assessment: "+R.info.v9)); } out.appendChild(c); }
+  const tools=el("div","stack");
+  const cp=el("button","btn ghost","Copy the report text"); cp.type="button"; cp.addEventListener("click",async()=>{ const txt=buildReport(st); let ok=false; try{ await navigator.clipboard.writeText(txt); ok=true; }catch(e){} cp.textContent=ok?"Copied":"Could not copy on this device"; setTimeout(()=>{cp.textContent="Copy the report text";},3000); }); tools.appendChild(cp);
+  const back=el("button","btn ghost","Open another report"); back.type="button"; back.addEventListener("click",()=>{ out.hidden=true; $("res-in").hidden=false; $("res-paste").value=""; window.scrollTo(0,0); }); tools.appendChild(back);
+  out.appendChild(tools);
+}
+function resMsg(t){ const m=$("res-msg"); m.textContent=t; m.hidden=!t; }
+$("b-res-show").addEventListener("click",()=>{ const st=decode($("res-paste").value); if(!st){ resMsg("No import code found. Paste the whole WhatsApp message — the code near the end starts with TSMV1."); return; } resMsg(""); renderResults(st); window.scrollTo(0,0); });
+$("b-res-local").addEventListener("click",()=>{ if(!Object.keys(S.ans).length){ resMsg("Nothing has been answered on this phone yet."); return; } resMsg(""); renderResults(S); window.scrollTo(0,0); });
+
+// ——— Boot ————————————————————————————————————————————————
+load(); renderStart();
+if(location.hash==="#results"){ show("s-res"); } else { show("s-start"); }
+})();
+</script>
+</body></html>
