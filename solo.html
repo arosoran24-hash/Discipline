@@ -21,6 +21,7 @@
   --ok:#4fd9a0;
   --warn:#e8c07b;
   --bad:#e08585;
+  --late:#ff5b4a;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -109,6 +110,10 @@ body{
 .hrow.st-yes .hmark{background:linear-gradient(135deg,var(--ink),var(--ink2));border-color:transparent}
 .hrow.st-no .hname{color:#8b8b93;text-decoration:line-through;text-decoration-color:rgba(160,160,170,.5)}
 .hrow.st-no .hmark{color:#e08585;border-color:rgba(224,86,86,.4)}
+.hrow.late{border-color:rgba(255,91,74,.55);background:linear-gradient(90deg,rgba(255,91,74,.13),rgba(255,91,74,.03) 70%),var(--card);box-shadow:inset 3px 0 0 var(--late)}
+.hrow.late .hmark{border-color:rgba(255,91,74,.75)}
+.latetag{display:none;flex:0 0 auto;font-size:9.5px;font-weight:800;border-radius:5px;padding:2px 6px;letter-spacing:.05em;text-transform:uppercase;background:rgba(255,91,74,.16);color:var(--late)}
+.hrow.late .latetag{display:inline-block}
 .hrow.hedit input.iname{flex:1;min-width:0;background:#26262c;border:1px solid #34343c;color:var(--txt);border-radius:8px;padding:8px 10px;font-size:14px;outline:none;font-family:inherit}
 .del,.ldel,.gdel{flex:0 0 auto;background:none;border:none;color:#8a8a93;font-size:15px;padding:2px 6px}
 .addrow{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
@@ -2045,15 +2050,15 @@ function hRow(it,d,i){
     return '<div class="hrow hedit" style="--i:'+Math.min(i,14)+'">'+tg+'<input class="iname" data-id="'+it.id+'" value="'+esc(it.name)+'"><button class="del" data-id="'+it.id+'">\u2715</button>'+editMini(it)+'</div>';
   }
   var m=d.marks[it.id]||'';
-  return '<div class="hrow'+(m?' st-'+m:'')+'" data-row="'+it.id+'" style="--i:'+Math.min(i,14)+'">'+
-    '<div style="flex:1;min-width:0"><div style="display:flex;gap:7px;align-items:center">'+tg+'<span class="hname">'+esc(it.name)+'</span></div>'+metaLine(it)+'</div>'+
+  return '<div class="hrow'+(m?' st-'+m:'')+(isLate(it,d)?' late':'')+'" data-row="'+it.id+'" style="--i:'+Math.min(i,14)+'">'+
+    '<div style="flex:1;min-width:0"><div style="display:flex;gap:7px;align-items:center">'+tg+'<span class="hname">'+esc(it.name)+'</span></div>'+metaLine(it,'<span class="latetag">overdue</span>')+'</div>'+
     '<span class="hmark">'+markGlyph(m)+'</span></div>';
 }
 
 function oC(o){return '<span class="ochip">'+esc(o||'GM')+'</span>';}
-function metaLine(it){
+function metaLine(it,pre){
   var t=it.target?'<span class="tgt">\u25B8 '+esc(it.target)+'</span>':'<span class="tgt none">no target set</span>';
-  return '<div class="meta">'+oC(it.owner)+t+'</div>';
+  return '<div class="meta">'+(pre||'')+oC(it.owner)+t+'</div>';
 }
 function editMini(it){
   var opts=OWNERS.map(function(o){return '<option value="'+o+'"'+(it.owner===o?' selected':'')+'>'+o+'</option>';}).join('');
@@ -2102,6 +2107,27 @@ function renderProgress(){
 }
 function nowMin(){var n=new Date();return n.getHours()*60+n.getMinutes();}
 function rowMin(name){var m=/^\s*(\d{1,2}):(\d{2})/.exec(name||'');return m?parseInt(m[1],10)*60+parseInt(m[2],10):-1;}
+/* minutes on the 4 AM-to-4 AM day: 00:00–03:59 count as the end of the day, not the start */
+function logMin(m){return m<240?m+1440:m;}
+/* overdue = not ticked/crossed and its time has passed; on a past day anything left open is overdue */
+function isLate(it,d){
+  if(!d||d.marks[it.id])return false;
+  var today=logicalISO();
+  if(d.date<today)return true;
+  if(d.date>today)return false;
+  var rm=rowMin(it.name);
+  return rm>=0&&logMin(rm)<logMin(nowMin());
+}
+/* re-check overdue rows in place as the clock moves (no full re-render) */
+function refreshLate(){
+  if(!state||editing)return;
+  var d=P().days[cur];if(!d)return;
+  document.querySelectorAll('#lists .hrow[data-row]').forEach(function(r){
+    var it=findItem(r.getAttribute('data-row'));
+    if(it)r.classList.toggle('late',isLate(it,d));
+  });
+  renderGlance(d);
+}
 function renderHome(){
   if(!state)return;
   var p=P(),d=p.days[cur];
@@ -2136,11 +2162,11 @@ function renderGlance(d){
   var p=P(),items=p.habits.concat(p.workouts).concat(d.extras||[]);
   var doneN=items.filter(function(x){return d.marks[x.id]==='yes';}).length;
   var openLogs=p.logs.filter(function(l){return l.status==='open';}).length;
-  var nm=nowMin(),next=null;
-  items.forEach(function(x){
+  var nm=logMin(nowMin()),next=null;
+  if(d.date===logicalISO())items.forEach(function(x){
     if(d.marks[x.id])return;
-    var t=rowMin(x.name);
-    if(t>=0&&t>=nm&&(!next||t<rowMin(next.name)))next=x;
+    var t=rowMin(x.name);if(t<0)return;t=logMin(t);
+    if(t>=nm&&(!next||t<logMin(rowMin(next.name))))next=x;
   });
   var h='<div class="glance">'+
     '<div class="gtile'+((items.length-doneN)?'':' ok')+'"><b>'+(items.length-doneN)+'</b><span>left</span></div>'+
@@ -2443,9 +2469,10 @@ $('#lists').addEventListener('click',function(e){
       var id=row.getAttribute('data-row'),d=P().days[cur],m=d.marks[id];
       var nv=m==='yes'?'no':(m==='no'?'':'yes');
       if(nv){d.marks[id]=nv;}else{delete d.marks[id];}
-      row.className='hrow'+(d.marks[id]?' st-'+d.marks[id]:'');
+      var fi=findItem(id);
+      row.className='hrow'+(d.marks[id]?' st-'+d.marks[id]:'')+(fi&&isLate(fi,d)?' late':'');
       row.querySelector('.hmark').textContent=markGlyph(d.marks[id]);
-      renderProgress();touch();
+      renderProgress();renderGlance(d);touch();
     }
   }
 });
@@ -2617,8 +2644,9 @@ $('#saveFileBtn').addEventListener('click',function(){
 });
 document.addEventListener('visibilitychange',function(){
   if(document.visibilityState==='hidden'){flushPush();}
-  else if(document.visibilityState==='visible'&&state){doPull();}
+  else if(document.visibilityState==='visible'&&state){refreshLate();doPull();}
 });
+setInterval(refreshLate,60000);
 window.addEventListener('pagehide',flushPush);
 window.addEventListener('online',function(){if(dirty)doPush();});
 
