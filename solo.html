@@ -218,7 +218,6 @@ body{
 .gtile.ok b{color:var(--ok)}
 .nextup{background:var(--card);border:1px solid var(--edge);border-radius:14px;padding:11px 13px;margin-top:9px;font-size:13.5px;display:flex;gap:9px;align-items:center}
 .nextup .nl{font-size:10px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em;flex:0 0 auto}
-.hrow.nowrow{border-color:rgba(227,87,127,.45);box-shadow:0 0 0 1px rgba(227,87,127,.15)}
 /* --- gym --- */
 .excard{background:var(--card);border:1px solid var(--edge);border-radius:16px;padding:13px 14px;margin-bottom:10px}
 .anim .excard,.anim .mealcard{animation:rise .3s cubic-bezier(.22,.61,.36,1) both;animation-delay:calc(var(--i,0)*24ms)}
@@ -2046,8 +2045,7 @@ function hRow(it,d,i){
     return '<div class="hrow hedit" style="--i:'+Math.min(i,14)+'">'+tg+'<input class="iname" data-id="'+it.id+'" value="'+esc(it.name)+'"><button class="del" data-id="'+it.id+'">\u2715</button>'+editMini(it)+'</div>';
   }
   var m=d.marks[it.id]||'';
-  var rm=rowMin(it.name),nw=nowMin(),isNow=(rm>=0&&rm<=nw&&nw-rm<60&&!m);
-  return '<div class="hrow'+(m?' st-'+m:'')+(isNow?' nowrow':'')+'" data-row="'+it.id+'" style="--i:'+Math.min(i,14)+'">'+
+  return '<div class="hrow'+(m?' st-'+m:'')+'" data-row="'+it.id+'" style="--i:'+Math.min(i,14)+'">'+
     '<div style="flex:1;min-width:0"><div style="display:flex;gap:7px;align-items:center">'+tg+'<span class="hname">'+esc(it.name)+'</span></div>'+metaLine(it)+'</div>'+
     '<span class="hmark">'+markGlyph(m)+'</span></div>';
 }
