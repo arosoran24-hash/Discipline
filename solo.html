@@ -2669,7 +2669,7 @@ function doFind(q){
   [['hourly','Shift'],['weekly','Weekly'],['monthly','Monthly'],['quarterly','Quarterly'],['half','Half-year'],['yearly','Yearly']].forEach(function(c){scan(p.cycles[c[0]].items,c[1],2,c[0]);});
   scan(p.cycles.noclock.trig,'Rule',2,'noclock');scan(p.cycles.noclock.judg,'Judgment',2,'noclock');
   scan(p.logs,'Log',4);scan(p.goals,'Goal',5);
-  GYM_PULL.concat(GYM_PUSH,GYM_POSTURE).forEach(function(x){
+  GYM_UPPER.concat(GYM_LOWER).forEach(function(x){
     if(x.n.toLowerCase().indexOf(q)>-1&&res.length<60&&!res.some(function(r){return r.n===x.n;}))res.push({t:'Gym',n:x.n,tab:3});
   });
   FOOD_PLAN.forEach(function(x){
@@ -2726,47 +2726,51 @@ $('#wzNext').addEventListener('click',function(){
 
 
 /* ==================== BODY: GYM + FOOD ==================== */
-var GYM_PULL=[
+var GYM_UPPER=[
+ {id:'bench',n:'Flat bench',s:3,r:8,g:'compound',note:'alone: safeties set, or no collars'},
+ {id:'incline',n:'Incline bench',s:3,r:8,g:'compound',note:'alone: safeties set, or no collars'},
+ {id:'ohp',n:'Overhead press',s:3,r:8,g:'compound'},
  {id:'row',n:'Row',s:3,r:10,g:'compound'},
  {id:'pulldown',n:'Lat pulldown / pull-up',s:3,r:8,g:'compound'},
+ {id:'lateral',n:'Lateral raise',s:3,r:15},
  {id:'facepull',n:'Face pull',s:3,r:15},
- {id:'shrug',n:'Shrug',s:3,r:12},
+ {id:'shrug',n:'DB shrug',s:3,r:12}
+];
+var GYM_LOWER=[
+ {id:'legpress',n:'Leg press',s:3,r:10,g:'compound'},
+ {id:'legcurl',n:'Leg curl',s:3,r:10},
  {id:'backext',n:'Back extension',s:3,r:12},
  {id:'bi_incline',n:'Incline DB curl',s:3,r:12},
- {id:'bi_machine',n:'Machine curl',s:3,r:12}
-];
-var GYM_PUSH=[
- {id:'bench',n:'Flat bench',s:3,r:8,g:'compound',note:'alone: no collars, or safeties set'},
- {id:'incline',n:'Incline bench',s:3,r:8,g:'compound',note:'alone: no collars, or safeties set'},
- {id:'ohp',n:'Overhead press',s:3,r:8,g:'compound'},
- {id:'lateral',n:'Lateral raise',s:3,r:15},
- {id:'tri_oh',n:'Overhead triceps extension',s:3,r:12,note:'light, strict'},
- {id:'tri_push',n:'Pushdown',s:3,r:12}
+ {id:'bi_machine',n:'Machine curl',s:3,r:12},
+ {id:'tri_oh',n:'Overhead triceps extension',s:3,r:12,note:'light, strict \u2014 lying extension if the shoulder pinches'},
+ {id:'tri_push',n:'Pushdown',s:3,r:12},
+ {id:'revcrunch',n:'Reverse crunch / cable crunch',s:3,r:12}
 ];
 var GYM_POSTURE=[
- {id:'bandpull',n:'Band pull-aparts',s:2,r:20},
- {id:'doorstretch',n:'Doorway chest stretch',s:2,r:'30s each side'}
+ {id:'bandpull',n:'Band pull-aparts 2\u00d720'},
+ {id:'doorstretch',n:'Doorway chest stretch \u00b7 30 s each side'}
 ];
 var GYM_TYPES={
- pull:{label:'Pull',list:GYM_PULL,lift:true},
- push:{label:'Push',list:GYM_PUSH,lift:true},
- off:{label:'Off',list:[],lift:false}
+ upper:{label:'Upper',list:GYM_UPPER,lift:true},
+ lower:{label:'Lower + arms',list:GYM_LOWER,lift:true},
+ rest:{label:'Rest',list:[],lift:false}
 };
-/* old plan, kept so logged history still reads */
-var GYM_LEGACY={upper:'push',lower:'pull',lowerA:'pull',lowerB:'pull',rest:'off'};
+/* earlier plans, kept so logged history still reads */
+var GYM_LEGACY={pull:'upper',push:'upper',off:'rest',lowerA:'lower',lowerB:'lower'};
 var GYM_RULES=[
- 'Add 1 rep or a small weight jump each session.',
- 'In a deficit, holding your weights counts as a win.',
+ 'Beat last session by 1 rep or a small load jump.',
+ 'Add load when every set hits the top of the range.',
+ 'Every set 1\u20132 reps from failure. All lifts progress \u2014 no holds.',
  'Rest 2\u20133 min on compounds, ~90 s on accessories.',
- 'Barbell presses alone: no collars, or safeties set.',
- 'Leg press comes back when the cut ends at 12% body fat.'
+ 'Barbell presses alone: safeties set, or no collars. Never test a 1RM.',
+ 'Ice bath: evening only, at least 4 h after lifting. Never before.'
 ];
 function gymSessions(){return P().gym.sessions;}
 function gymToday(){
   var d=logicalISO(),ss=gymSessions();
   for(var i=0;i<ss.length;i++)if(ss[i].date===d){
     var x=ss[i];
-    if(!GYM_TYPES[x.type])x.type=GYM_LEGACY[x.type]||'pull';
+    if(!GYM_TYPES[x.type])x.type=GYM_LEGACY[x.type]||'upper';
     return x;
   }
   return null;
@@ -2781,14 +2785,14 @@ function gymNextType(){
   for(var i=ss.length-1;i>=0;i--){
     if(ss[i].date===d)continue;
     var t=GYM_TYPES[ss[i].type]?ss[i].type:(GYM_LEGACY[ss[i].type]||'');
-    if(t==='pull')return 'push';
-    if(t==='push')return 'off';
-    if(t==='off')return 'pull';
+    if(t==='upper')return 'lower';
+    if(t==='lower')return 'rest';
+    if(t==='rest')return 'upper';
   }
-  return 'pull';
+  return 'upper';
 }
 function gymStart(type){
-  if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'pull';
+  if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'upper';
   var s=gymToday();
   if(s){s.type=type;s.sets={};}
   else{s={id:uid(),date:logicalISO(),type:type,sets:{},done:false};gymSessions().push(s);}
@@ -2809,25 +2813,16 @@ function lastBest(exId){
 function renderGym(){
   var iso=logicalISO(),s=gymToday(),sugg=gymNextType(),dl=gymDaily(iso);
   var lift=s?!!GYM_TYPES[s.type].lift:null;
-  var tread=(s===null)?'30 min on lift days \u00b7 60 min off':(lift?'30 min':'60 min');
-  var h='';
-  h+='<div class="chips" style="margin:14px 0 4px">'+['pull','push','off'].map(function(t){
+  var h='<div class="chips" style="margin:14px 0 4px">'+['upper','lower','rest'].map(function(t){
     var on=s&&s.type===t;
     return '<button class="fchip'+(on?' on':'')+'" data-gt="'+t+'">'+GYM_TYPES[t].label+(!s&&t===sugg?' \u2190':'')+'</button>';
   }).join('')+'</div>';
-  h+='<div class="psec">Every day</div><div class="pcard">'+
-    [['tread','Treadmill \u00b7 6 km/h, 8% incline \u00b7 '+tread],
-     ['band','Band pull-aparts 2\u00d720'],
-     ['stretch','Doorway chest stretch \u00b7 30 s each side']]
-    .map(function(r){
-      return '<div class="togrow" data-gd="'+r[0]+'"><span>'+r[1]+'</span><span class="mealtick'+(dl[r[0]]?' on':'')+'">'+(dl[r[0]]?'\u2713':'')+'</span></div>';
-    }).join('')+'</div>';
   if(!s){
-    h+='<div class="empty">Pick today\u2019s session. Next up: <b style="color:var(--txt)">'+GYM_TYPES[sugg].label+'</b> \u2014 Pull \u2192 Push \u2192 Off, repeating.</div>';
+    h+='<div class="empty">Pick today\u2019s session. Next up: <b style="color:var(--txt)">'+GYM_TYPES[sugg].label+'</b> \u2014 Upper \u2192 Lower \u2192 Rest, rolling.</div>';
     return h+gymRulesCard();
   }
   if(!lift){
-    h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Off day</div><div class="pitem">No lifting. Treadmill 60 min at 6 km/h, 8% incline \u2014 posture work still counts.</div>'+
+    h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Rest day</div><div class="pitem">No training. Sleep 7\u20139 h.</div>'+
       '<div class="lact" style="margin-top:12px"><button class="lbtn '+(s.done?'ghost':'res')+'" data-gdone="1">'+(s.done?'\u2713 logged':'mark done')+'</button>'+
       '<button class="lbtn can" data-gclear="1">clear day</button></div></div>';
     return h+gymRecent()+gymRulesCard();
@@ -2835,9 +2830,11 @@ function renderGym(){
   var list=GYM_TYPES[s.type].list;
   h+='<div class="prow"><span>'+GYM_TYPES[s.type].label+' \u00b7 '+fmtLong(s.date)+'</span><b>'+
       list.filter(function(e){return (s.sets[e.id]||[]).some(function(x){return x&&x.r;});}).length+' / '+list.length+'</b></div>';
+  h+='<div class="psec">Before you start</div><div class="pcard">'+GYM_POSTURE.map(function(w){
+    return '<div class="togrow" data-gd="'+w.id+'"><span>'+esc(w.n)+'</span><span class="mealtick'+(dl[w.id]?' on':'')+'">'+(dl[w.id]?'\u2713':'')+'</span></div>';
+  }).join('')+'</div>';
   h+=list.map(function(ex,i){
-    var lb=lastBest(ex.id),st=s.sets[ex.id]||[];
-    var rows='';
+    var lb=lastBest(ex.id),st=s.sets[ex.id]||[],rows='';
     for(var k=0;k<ex.s;k++){
       var v=st[k]||{};
       rows+='<div class="setrow"><span class="setlab">set '+(k+1)+'</span>'+
@@ -2871,13 +2868,24 @@ function gymRulesCard(){
 }
 /* ---------- food ---------- */
 var FOOD_PLAN=[
- {k:'m1',t:'06:15',n:'1 banana + water'},
- {k:'m2',t:'07:45',n:'400 g skyr + 1 scoop whey + 5 g creatine, stirred in'},
- {k:'m3',t:'11:00',n:'6 eggs scrambled, 1 tbsp butter or olive oil'},
- {k:'m4',t:'16:00',n:'300 g chicken tikka + big salad, 2 tbsp olive oil, lemon, \u00bd avocado'},
- {k:'m5',t:'21:00',n:'Fruit salad + 30 g almonds'}
+ {k:'m1',t:'06:15',n:'Banana + water'},
+ {k:'m2',t:'07:45',n:'Kalleh Pro Icelandic yogurt 400 g + 1 scoop whey + 5 g creatine, stirred'},
+ {k:'m3',t:'11:00',n:'6 eggs scrambled, 1 tbsp butter'},
+ {k:'m4',t:'16:00',n:'300 g chicken tikka + 200 g potatoes + big salad, 2 tbsp olive oil, lemon, \u00bd avocado'},
+ {k:'m5',t:'21:00',n:'Fruit salad ~250 g + 30 g almonds'}
 ];
-function kcalTarget(){return logicalISO()>='2027-01-01'?'2,500':'2,300';}
+var FOOD_TARGETS=[
+ '\u22482,330 kcal \u00b7 ~210 g protein \u00b7 ~140 g carbs \u00b7 ~100 g fat',
+ 'Maintenance ~2,650\u20132,750 \u2014 about a 400 deficit',
+ 'Creatine 5 g daily, stirred into the skyr \u2014 the 07:45 tick covers it',
+ 'At 12%: food to ~2,800, same training, lean bulk'
+];
+var FOOD_DIAL=[
+ 'Faster than 0.6 kg a week \u2192 potatoes to 300 g',
+ 'Slower than 0.3 kg a week for 3 weeks \u2192 potatoes to 100 g, or a 20-min daily walk',
+ 'Lifts stall two sessions running, broken sleep or dizziness \u2192 +2 eggs that day; check sleep first',
+ 'Full re-evaluation every 12 weeks \u2014 first ~28 Jan 2027'
+];
 function foodFor(iso){
   var f=P().food.days[iso];
   if(!f){f={ate:{},clean:null};P().food.days[iso]=f;}
@@ -2900,31 +2908,30 @@ function renderFood(){
       '<div class="mealtick">'+(on?'\u2713':'')+'</div></div>';
   }).join('');
   h+='<div class="pcard" style="margin-top:12px">'+
-    '<div class="togrow" data-clean="1"><span>Clean day \u00b7 junk food banned</span><span class="mealtick'+(f.clean===true?' on':'')+(f.clean===false?' bad':'')+'">'+(f.clean===true?'\u2713':f.clean===false?'\u2717':'')+'</span></div>'+
+    '<div class="togrow" data-clean="1"><span>Clean day \u00b7 nothing fried, no junk</span><span class="mealtick'+(f.clean===true?' on':'')+(f.clean===false?' bad':'')+'">'+(f.clean===true?'\u2713':f.clean===false?'\u2717':'')+'</span></div>'+
     '</div>';
-  h+='<div class="psec">Targets</div><div class="pcard">'+
-    '<div class="pitem">~'+kcalTarget()+' kcal a day'+(logicalISO()<'2027-01-01'?' \u2014 ~2,500 from 1 January':'')+'</div>'+
-    '<div class="pitem">~205 g protein a day</div>'+
-    '<div class="pitem">Creatine 5 g daily, stirred into the skyr \u2014 the 07:45 tick covers it</div>'+
-    '</div>';
+  h+='<div class="psec">Targets</div><div class="pcard">'+FOOD_TARGETS.map(function(t){
+    return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
   var wi=weighFor();
   h+='<div class="psec">'+periodLabel('weekly')+'</div><div class="pcard">'+
-    '<div class="pitem" style="color:#6a6a72;margin-bottom:8px">Once a week, same morning each time.</div>'+
-    '<div class="setrow"><span class="setlab">weight</span>'+
-    '<input inputmode="decimal" placeholder="kg" data-wi="w" value="'+esc(wi.w===undefined?'':wi.w)+'">'+
-    '<span class="setx">\u00b7</span>'+
-    '<input inputmode="decimal" placeholder="waist cm" data-wi="waist" value="'+esc(wi.waist===undefined?'':wi.waist)+'"></div></div>';
-  var wk=P().food.weigh,keys=Object.keys(wk).filter(function(k){var x=wk[k];return x&&(x.w||x.waist);}).sort().slice(-8).reverse();
+    '<div class="pitem" style="color:#6a6a72;margin-bottom:8px">Sunday morning, after the bathroom, before food.</div>'+
+    [['w','weight','kg'],['waist','waist','cm at navel, relaxed'],['neck','neck','cm']].map(function(r){
+      return '<div class="setrow"><span class="setlab">'+r[1]+'</span>'+
+        '<input inputmode="decimal" placeholder="'+r[2]+'" data-wi="'+r[0]+'" value="'+esc(wi[r[0]]===undefined?'':wi[r[0]])+'"></div>';
+    }).join('')+'</div>';
+  var wk=P().food.weigh,keys=Object.keys(wk).filter(function(k){var x=wk[k];return x&&(x.w||x.waist||x.neck);}).sort().slice(-8).reverse();
   if(keys.length>1){
     h+='<div class="psec">Weigh-in history</div><div class="pcard">'+keys.map(function(k){
       var x=wk[k],d=new Date(k+'T12:00:00');
-      return '<div class="pitem"><b style="color:var(--txt)">'+d.getDate()+' '+MO[d.getMonth()]+'</b> \u00b7 '+esc(x.w||'\u2014')+' kg \u00b7 waist '+esc(x.waist||'\u2014')+'</div>';
+      return '<div class="pitem"><b style="color:var(--txt)">'+d.getDate()+' '+MO[d.getMonth()]+'</b> \u00b7 '+esc(x.w||'\u2014')+' kg \u00b7 waist '+esc(x.waist||'\u2014')+' \u00b7 neck '+esc(x.neck||'\u2014')+'</div>';
     }).join('')+'</div>';
   }
+  h+='<div class="psec">If the scale drifts</div><div class="pcard">'+FOOD_DIAL.map(function(t){
+    return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
   var cl=0,tot=0;
   Object.keys(P().food.days).sort().slice(-14).forEach(function(k){var x=P().food.days[k];if(x.clean!==null&&x.clean!==undefined){tot++;if(x.clean)cl++;}});
   if(tot)h+='<div class="psec">Clean days</div><div class="pcard"><div class="pitem">'+cl+' of the last '+tot+' reported days</div></div>';
-  h+='<div class="pitem" style="color:#6a6a72;margin-top:14px;font-size:12px">Same five plates, in order, every day \u2014 nothing to decide. Water with each. Settings locked. List changes need a week\u2019s notice to the kitchen.</div>';
+  h+='<div class="pitem" style="color:#6a6a72;margin-top:14px;font-size:12px">Water with every plate. Nothing fried. No rice. Two slices of whole-grain bread swap for the 200 g potatoes any day. One meal a week with friends replaces the 16:00 plate \u2014 grilled meat and salad; on lamb or beef drop the avocado and a tbsp of oil that day. Next day unchanged.</div>';
   return h;
 }
 function renderBody(anim){
@@ -2937,11 +2944,11 @@ function renderBody(anim){
   el.classList[anim?'add':'remove']('anim');
   if(bodyView==='gym'){
     $('#bodyTitle').textContent='Gym';
-    $('#bodySub').textContent='Pull \u2192 Push \u2192 Off, repeating. Add a rep or a small jump every session.';
+    $('#bodySub').textContent='Upper \u2192 Lower \u2192 Rest, rolling. Every lift progresses \u2014 no holds.';
     el.innerHTML=renderGym();
   }else{
     $('#bodyTitle').textContent='Food';
-    $('#bodySub').textContent='Five fixed plates, in order \u00b7 ~'+kcalTarget()+' kcal, ~205 g protein.';
+    $('#bodySub').textContent='Five fixed plates, in order \u00b7 \u22482,330 kcal, ~210 g protein.';
     el.innerHTML=renderFood();
   }
 }
