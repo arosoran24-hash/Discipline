@@ -446,6 +446,8 @@ function fixPerson(p,name){
   if(!p.food||typeof p.food!=='object')p.food={days:{}};
   if(!p.food.days||typeof p.food.days!=='object')p.food.days={};
   if(!p.food.weigh||typeof p.food.weigh!=='object')p.food.weigh={};
+  if(!p.food.wt||typeof p.food.wt!=='object')p.food.wt={};
+  if(!p.food.weeklog||typeof p.food.weeklog!=='object')p.food.weeklog={};
   return p;
 }
 function normalize(s){
@@ -2141,7 +2143,8 @@ function renderHome(){
   var openLogs=p.logs.filter(function(l){return l.status==='open';}).length;
   var gdone=p.goals.filter(function(g){return g.done;}).length;
   var gs=gymToday(),gl=gs?(GYM_TYPES[gs.type]?GYM_TYPES[gs.type].label:gs.type)+(gs.done?' \u2713':' \u00b7 in progress'):GYM_TYPES[gymNextType()].label+' next';
-  var f=p.food.days[logicalISO()],ate=f?FOOD_PLAN.filter(function(m){return f.ate&&f.ate[m.k];}).length:0;
+  var fplan=foodPlan(logicalISO());
+  var f=p.food.days[logicalISO()],ate=f?fplan.filter(function(m){return f.ate&&f.ate[m.k];}).length:0;
   var n=p.numbers[d.date]||{};
   var occ=n.occ?n.occ+'% occ':'no numbers yet';
   $('#homeTitle').textContent='Day '+d.n;
@@ -2150,7 +2153,7 @@ function renderHome(){
    '<button class="htile wide t-today" data-go2="1"><div style="display:flex;justify-content:space-between;align-items:flex-start"><span class="hicon">\u25C9</span><span class="hbig">'+pct+'%</span></div>'+
      '<div><div class="hname">Today</div><div class="hstat">'+doneN+' of '+items.length+' ticked</div><div class="hbar"><i style="width:'+pct+'%"></i></div></div></button>'+
    '<button class="htile t-cycles" data-go2="2"><span class="hicon">\u21BB</span><div><div class="hname">Cycles</div><div class="hstat">Weekly '+wdone+' / '+wk.items.length+'</div></div></button>'+
-   '<button class="htile t-body" data-go2="3"><span class="hicon">\u2338</span><div><div class="hname">Body</div><div class="hstat">'+esc(gl)+'<br>'+ate+' / '+FOOD_PLAN.length+' meals</div></div></button>'+
+   '<button class="htile t-body" data-go2="3"><span class="hicon">\u2338</span><div><div class="hname">Body</div><div class="hstat">'+esc(gl)+'<br>'+ate+' / '+fplan.length+' meals</div></div></button>'+
    '<button class="htile t-log" data-go2="4"><span class="hicon">\u270E</span><div><div class="hname">Log book</div><div class="hstat">'+openLogs+' open</div></div></button>'+
    '<button class="htile t-goals" data-go2="5"><span class="hicon">\u2691</span><div><div class="hname">Goals</div><div class="hstat">'+gdone+' of '+p.goals.length+' done</div></div></button>'+
    '<button class="htile wide t-data" data-go2="6"><div style="display:flex;justify-content:space-between;align-items:center"><span class="hicon">\u25F4</span><span class="hstat" style="margin:0">'+esc(occ)+'</span></div>'+
@@ -2669,10 +2672,10 @@ function doFind(q){
   [['hourly','Shift'],['weekly','Weekly'],['monthly','Monthly'],['quarterly','Quarterly'],['half','Half-year'],['yearly','Yearly']].forEach(function(c){scan(p.cycles[c[0]].items,c[1],2,c[0]);});
   scan(p.cycles.noclock.trig,'Rule',2,'noclock');scan(p.cycles.noclock.judg,'Judgment',2,'noclock');
   scan(p.logs,'Log',4);scan(p.goals,'Goal',5);
-  GYM_UPPER.concat(GYM_LOWER).forEach(function(x){
+  GYM_UPPER_A.concat(GYM_UPPER_B,GYM_LOWER).forEach(function(x){
     if(x.n.toLowerCase().indexOf(q)>-1&&res.length<60&&!res.some(function(r){return r.n===x.n;}))res.push({t:'Gym',n:x.n,tab:3});
   });
-  FOOD_PLAN.forEach(function(x){
+  foodPlan(logicalISO()).forEach(function(x){
     if(x.n.toLowerCase().indexOf(q)>-1&&res.length<60)res.push({t:'Food',n:x.t+' \u00b7 '+x.n,tab:3});
   });
   out.innerHTML=res.length?res.map(function(r,i){
@@ -2726,51 +2729,62 @@ $('#wzNext').addEventListener('click',function(){
 
 
 /* ==================== BODY: GYM + FOOD ==================== */
-var GYM_UPPER=[
- {id:'bench',n:'Flat bench',s:3,r:8,g:'compound',note:'alone: safeties set, or no collars'},
- {id:'incline',n:'Incline bench',s:3,r:8,g:'compound',note:'alone: safeties set, or no collars'},
- {id:'ohp',n:'Overhead press',s:3,r:8,g:'compound'},
- {id:'row',n:'Row',s:3,r:10,g:'compound'},
- {id:'pulldown',n:'Lat pulldown / pull-up',s:3,r:8,g:'compound'},
- {id:'lateral',n:'Lateral raise',s:3,r:15},
- {id:'facepull',n:'Face pull',s:3,r:15},
- {id:'shrug',n:'DB shrug',s:3,r:12}
+var EX_BENCH={id:'bench',n:'Flat bench',s:3,r:8,rt:10,g:'c',note:'alone: safeties set, or no collars'};
+var EX_INCLINE={id:'incline',n:'Incline bench',s:3,r:8,rt:10,g:'c',note:'alone: safeties set, or no collars'};
+var EX_OHP={id:'ohp',n:'Overhead press',s:3,r:8,rt:10,g:'c'};
+var UP_BACK=[
+ {id:'row',n:'Row',s:4,r:10,rt:12,g:'c'},
+ {id:'pulldown',n:'Lat pulldown / pull-up',s:4,r:10,rt:12,g:'c'}
 ];
+var UP_ACC=[
+ {id:'lateral',n:'Lateral raise',s:3,r:15,rt:20},
+ {id:'facepull',n:'Face pull',s:3,r:15,rt:20},
+ {id:'shrug',n:'DB shrug',s:3,r:12,rt:15,note:'first to go if the session runs past 90 min'}
+];
+var GYM_UPPER_A=[EX_BENCH,EX_INCLINE,EX_OHP].concat(UP_BACK,UP_ACC);
+var GYM_UPPER_B=[EX_OHP,EX_BENCH,EX_INCLINE].concat(UP_BACK,UP_ACC);
 var GYM_LOWER=[
- {id:'legpress',n:'Leg press',s:3,r:10,g:'compound'},
- {id:'legcurl',n:'Leg curl',s:3,r:10},
- {id:'backext',n:'Back extension',s:3,r:12},
- {id:'bi_incline',n:'Incline DB curl',s:3,r:12},
- {id:'bi_machine',n:'Machine curl',s:3,r:12},
- {id:'tri_oh',n:'Overhead triceps extension',s:3,r:12,note:'light, strict \u2014 lying extension if the shoulder pinches'},
- {id:'tri_push',n:'Pushdown',s:3,r:12},
- {id:'revcrunch',n:'Reverse crunch / cable crunch',s:3,r:12}
+ {id:'legpress',n:'Leg press',s:3,r:8,rt:10,g:'c',note:'jumps +10 kg'},
+ {id:'splitsquat',n:'DB split squat',s:3,r:10,g:'c',note:'each leg'},
+ {id:'rdl',n:'RDL',s:3,r:8,g:'c',note:'soft knees, hips back, weights slide down the thighs, stop when the hamstrings pull, flat back \u2014 load added slowest'},
+ {id:'legcurl',n:'Leg curl',s:3,r:12,rt:15},
+ {id:'calf',n:'Calf raise',s:3,r:12,rt:15},
+ {id:'bi_incline',n:'Incline DB curl',s:3,r:12,rt:15},
+ {id:'bi_machine',n:'Machine curl',s:3,r:12,rt:15},
+ {id:'tri_oh',n:'Overhead triceps extension',s:3,r:12,rt:15,note:'light, strict \u2014 lying extension if the shoulder pinches'},
+ {id:'tri_push',n:'Pushdown',s:3,r:12,rt:15},
+ {id:'revcrunch',n:'Reverse crunch / cable crunch',s:3,r:12,rt:15}
 ];
-var GYM_POSTURE=[
+var GYM_WARM=[
  {id:'bandpull',n:'Band pull-aparts 2\u00d720'},
- {id:'doorstretch',n:'Doorway chest stretch \u00b7 30 s each side'}
+ {id:'ascend',n:'Ascending sets on the first compound \u00b7 bar \u00d710, 50% \u00d76, 75% \u00d73'}
 ];
+var GYM_AFTER=[{id:'stretch',n:'Doorway chest stretch \u00b7 30 s each side'}];
 var GYM_TYPES={
- upper:{label:'Upper',list:GYM_UPPER,lift:true},
- lower:{label:'Lower + arms',list:GYM_LOWER,lift:true},
+ upperA:{label:'Upper A',list:GYM_UPPER_A,lift:true,cap:90},
+ upperB:{label:'Upper B',list:GYM_UPPER_B,lift:true,cap:90},
+ lower:{label:'Lower + arms',list:GYM_LOWER,lift:true,cap:100},
  rest:{label:'Rest',list:[],lift:false}
 };
 /* earlier plans, kept so logged history still reads */
-var GYM_LEGACY={pull:'upper',push:'upper',off:'rest',lowerA:'lower',lowerB:'lower'};
+var GYM_LEGACY={pull:'upperA',push:'upperA',upper:'upperA',off:'rest',lowerA:'lower',lowerB:'lower'};
 var GYM_RULES=[
- 'Beat last session by 1 rep or a small load jump.',
- 'Add load when every set hits the top of the range.',
- 'Every set 1\u20132 reps from failure. All lifts progress \u2014 no holds.',
+ 'Add reps until every set hits the top of its range at \u22642 RIR, then +2.5 kg upper, +5 kg lower, +10 on leg press \u2014 and back to the bottom.',
+ 'Repeating a session is fine. All lifts progress \u2014 no holds.',
+ '1\u20133 reps in reserve, last set closest to 1. Same technique and range every session.',
  'Rest 2\u20133 min on compounds, ~90 s on accessories.',
+ 'Upper fits 90 min: over, drop shrugs; still over, 2-min rests on compounds. Lower runs 90\u2013100.',
+ 'Legs first, arms after, abs last. Running late: superset a curl with a triceps move \u2014 nothing gets cut.',
  'Barbell presses alone: safeties set, or no collars. Never test a 1RM.',
- 'Ice bath: evening only, at least 4 h after lifting. Never before.'
+ 'Week 12: deload at 60% load and half the sets, then review.',
+ 'Ice bath evening only, at least 4 h after lifting, 2\u20135 min, never alone.'
 ];
 function gymSessions(){return P().gym.sessions;}
 function gymToday(){
   var d=logicalISO(),ss=gymSessions();
   for(var i=0;i<ss.length;i++)if(ss[i].date===d){
     var x=ss[i];
-    if(!GYM_TYPES[x.type])x.type=GYM_LEGACY[x.type]||'upper';
+    if(!GYM_TYPES[x.type])x.type=GYM_LEGACY[x.type]||'upperA';
     return x;
   }
   return null;
@@ -2780,22 +2794,32 @@ function gymDaily(iso){
   if(!dd[iso])dd[iso]={};
   return dd[iso];
 }
+function gymUpperVariant(){
+  var ss=gymSessions();
+  for(var i=ss.length-1;i>=0;i--){
+    var t=GYM_TYPES[ss[i].type]?ss[i].type:(GYM_LEGACY[ss[i].type]||'');
+    if(t==='upperA')return 'upperB';
+    if(t==='upperB')return 'upperA';
+  }
+  return 'upperA';
+}
 function gymNextType(){
   var ss=gymSessions(),d=logicalISO();
   for(var i=ss.length-1;i>=0;i--){
     if(ss[i].date===d)continue;
     var t=GYM_TYPES[ss[i].type]?ss[i].type:(GYM_LEGACY[ss[i].type]||'');
-    if(t==='upper')return 'lower';
+    if(t==='upperA'||t==='upperB')return 'lower';
     if(t==='lower')return 'rest';
-    if(t==='rest')return 'upper';
+    if(t==='rest')return gymUpperVariant();
   }
-  return 'upper';
+  return 'upperA';
 }
 function gymStart(type){
-  if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'upper';
+  if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'upperA';
   var s=gymToday();
   if(s){s.type=type;s.sets={};}
-  else{s={id:uid(),date:logicalISO(),type:type,sets:{},done:false};gymSessions().push(s);}
+  else{s={id:uid(),date:logicalISO(),type:type,sets:{},done:false,start:Date.now()};gymSessions().push(s);}
+  if(!s.start)s.start=Date.now();
   touch();return s;
 }
 function lastBest(exId){
@@ -2805,50 +2829,59 @@ function lastBest(exId){
     if(st&&st.length){
       var best=null;
       st.forEach(function(x){if(x&&x.w!==''&&x.w!==undefined){if(!best||Number(x.w)>Number(best.w))best=x;}});
-      if(best)return{w:best.w,r:best.r,date:ss[i].date};
+      if(best)return{w:best.w,r:best.r,rir:best.rir,date:ss[i].date};
     }
   }
   return null;
 }
+function fmtRange(ex){return ex.s+'\u00d7'+ex.r+(ex.rt?'\u2192'+ex.rt:'');}
+function tickRows(arr,dl){
+  return arr.map(function(w){
+    return '<div class="togrow" data-gd="'+w.id+'"><span>'+esc(w.n)+'</span><span class="mealtick'+(dl[w.id]?' on':'')+'">'+(dl[w.id]?'\u2713':'')+'</span></div>';
+  }).join('');
+}
 function renderGym(){
   var iso=logicalISO(),s=gymToday(),sugg=gymNextType(),dl=gymDaily(iso);
   var lift=s?!!GYM_TYPES[s.type].lift:null;
-  var h='<div class="chips" style="margin:14px 0 4px">'+['upper','lower','rest'].map(function(t){
+  var h='<div class="chips" style="margin:14px 0 4px">'+['upperA','upperB','lower','rest'].map(function(t){
     var on=s&&s.type===t;
     return '<button class="fchip'+(on?' on':'')+'" data-gt="'+t+'">'+GYM_TYPES[t].label+(!s&&t===sugg?' \u2190':'')+'</button>';
   }).join('')+'</div>';
   if(!s){
-    h+='<div class="empty">Pick today\u2019s session. Next up: <b style="color:var(--txt)">'+GYM_TYPES[sugg].label+'</b> \u2014 Upper \u2192 Lower \u2192 Rest, rolling.</div>';
+    h+='<div class="empty">Pick today\u2019s session. Next up: <b style="color:var(--txt)">'+GYM_TYPES[sugg].label+'</b> \u2014 Upper \u2192 Lower \u2192 Rest, rolling. Lift between 05:30 and 07:30.</div>';
     return h+gymRulesCard();
   }
   if(!lift){
-    h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Rest day</div><div class="pitem">No training. Sleep 7\u20139 h.</div>'+
+    h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Rest day</div><div class="pitem">No training. Sleep 21:00\u201322:00 to 05:00 \u2014 7 h is the floor.</div>'+
       '<div class="lact" style="margin-top:12px"><button class="lbtn '+(s.done?'ghost':'res')+'" data-gdone="1">'+(s.done?'\u2713 logged':'mark done')+'</button>'+
       '<button class="lbtn can" data-gclear="1">clear day</button></div></div>';
     return h+gymRecent()+gymRulesCard();
   }
-  var list=GYM_TYPES[s.type].list;
-  h+='<div class="prow"><span>'+GYM_TYPES[s.type].label+' \u00b7 '+fmtLong(s.date)+'</span><b>'+
+  var list=GYM_TYPES[s.type].list,cap=GYM_TYPES[s.type].cap;
+  var mins=s.start?Math.round((Date.now()-s.start)/60000):null;
+  var clock=(mins!==null&&mins>=0&&mins<600)?(mins+' min'+(mins>cap?' \u00b7 over':'')):'';
+  h+='<div class="prow"><span>'+GYM_TYPES[s.type].label+' \u00b7 '+(clock||fmtLong(s.date))+'</span><b>'+
       list.filter(function(e){return (s.sets[e.id]||[]).some(function(x){return x&&x.r;});}).length+' / '+list.length+'</b></div>';
-  h+='<div class="psec">Before you start</div><div class="pcard">'+GYM_POSTURE.map(function(w){
-    return '<div class="togrow" data-gd="'+w.id+'"><span>'+esc(w.n)+'</span><span class="mealtick'+(dl[w.id]?' on':'')+'">'+(dl[w.id]?'\u2713':'')+'</span></div>';
-  }).join('')+'</div>';
+  h+='<div class="psec">Warm-up</div><div class="pcard">'+tickRows(GYM_WARM,dl)+'</div>';
   h+=list.map(function(ex,i){
     var lb=lastBest(ex.id),st=s.sets[ex.id]||[],rows='';
     for(var k=0;k<ex.s;k++){
-      var v=st[k]||{};
+      var v=st[k]||{},last=(k===ex.s-1);
       rows+='<div class="setrow"><span class="setlab">set '+(k+1)+'</span>'+
         '<input inputmode="decimal" placeholder="kg" data-gs="'+ex.id+'_'+k+'_w" value="'+esc(v.w===undefined?'':v.w)+'">'+
         '<span class="setx">\u00d7</span>'+
-        '<input inputmode="numeric" placeholder="reps" data-gs="'+ex.id+'_'+k+'_r" value="'+esc(v.r===undefined?'':v.r)+'"></div>';
+        '<input inputmode="numeric" placeholder="reps" data-gs="'+ex.id+'_'+k+'_r" value="'+esc(v.r===undefined?'':v.r)+'">'+
+        (last?'<span class="setx">@</span><input inputmode="numeric" placeholder="RIR" style="flex:0 0 62px" data-gs="'+ex.id+'_'+k+'_rir" value="'+esc(v.rir===undefined?'':v.rir)+'">':'')+
+        '</div>';
     }
     return '<div class="excard" style="--i:'+Math.min(i,14)+'">'+
       '<div class="exhead"><span class="exname">'+esc(ex.n)+'</span>'+
-      (ex.g==='compound'?'<span class="exalt">2\u20133 min rest</span>':'')+'</div>'+
-      '<div class="extarget">'+ex.s+'\u00d7'+(ex.r?ex.r:'')+
-        (lb?' \u00b7 <span class="exlast">last '+esc(lb.w)+'kg \u00d7 '+esc(lb.r)+'</span>':' \u00b7 <span class="exlast none">no history</span>')+'</div>'+
+      (ex.g==='c'?'<span class="exalt">2\u20133 min</span>':'')+'</div>'+
+      '<div class="extarget">'+fmtRange(ex)+
+        (lb?' \u00b7 <span class="exlast">last '+esc(lb.w)+'kg \u00d7 '+esc(lb.r)+(lb.rir?' @'+esc(lb.rir):'')+'</span>':' \u00b7 <span class="exlast none">no history</span>')+'</div>'+
       (ex.note?'<div class="exnote">'+esc(ex.note)+'</div>':'')+rows+'</div>';
   }).join('');
+  h+='<div class="psec">After</div><div class="pcard">'+tickRows(GYM_AFTER,dl)+'</div>';
   h+='<div class="lact" style="margin-top:14px"><button class="lbtn '+(s.done?'ghost':'res')+'" data-gdone="1">'+(s.done?'\u2713 session finished':'finish session')+'</button>'+
      '<button class="lbtn can" data-gclear="1">clear day</button></div>';
   return h+gymRecent()+gymRulesCard();
@@ -2857,8 +2890,8 @@ function gymRecent(){
   var recent=gymSessions().slice(-8).reverse();
   if(recent.length<2)return '';
   return '<div class="psec">Recent sessions</div><div class="pcard">'+recent.map(function(x){
-    var t=GYM_TYPES[x.type]?GYM_TYPES[x.type].label:(GYM_TYPES[GYM_LEGACY[x.type]]?GYM_TYPES[GYM_LEGACY[x.type]].label:x.type);
-    return '<div class="pitem">'+x.date.slice(5)+' \u00b7 '+t+(x.done?' \u2713':'')+'</div>';
+    var k=GYM_TYPES[x.type]?x.type:GYM_LEGACY[x.type];
+    return '<div class="pitem">'+x.date.slice(5)+' \u00b7 '+(GYM_TYPES[k]?GYM_TYPES[k].label:x.type)+(x.done?' \u2713':'')+'</div>';
   }).join('')+'</div>';
 }
 function gymRulesCard(){
@@ -2867,24 +2900,29 @@ function gymRulesCard(){
   }).join('')+'</div>';
 }
 /* ---------- food ---------- */
-var FOOD_PLAN=[
- {k:'m1',t:'06:15',n:'Banana + water'},
- {k:'m2',t:'07:45',n:'Kalleh Pro Icelandic yogurt 400 g + 1 scoop whey + 5 g creatine, stirred'},
- {k:'m3',t:'11:00',n:'6 eggs scrambled, 1 tbsp butter'},
- {k:'m4',t:'16:00',n:'300 g chicken tikka + 200 g potatoes + big salad, 2 tbsp olive oil, lemon, \u00bd avocado'},
- {k:'m5',t:'21:00',n:'Fruit salad ~250 g + 30 g almonds'}
-];
+function isLiftDay(iso){
+  var ss=gymSessions();
+  for(var i=0;i<ss.length;i++)if(ss[i].date===iso){
+    var k=GYM_TYPES[ss[i].type]?ss[i].type:GYM_LEGACY[ss[i].type];
+    return !!(GYM_TYPES[k]&&GYM_TYPES[k].lift);
+  }
+  return !!GYM_TYPES[gymNextType()].lift;
+}
+function foodPlan(iso){
+  var lift=isLiftDay(iso);
+  return [
+   {k:'m1',t:'06:15',n:'Banana + water'},
+   {k:'m2',t:'07:45',n:'Icelandic yogurt 200 g + 1 scoop whey + 5 g creatine'+(lift?' + 2 slices whole-grain bread':'')},
+   {k:'m3',t:'11:00',n:'6 eggs scrambled, 14 g butter (weighed)'},
+   {k:'m4',t:'16:00',n:'300 g chicken breast cooked, tikka-style + big salad, 1 tbsp olive oil level, lemon, \u00bd avocado'+(lift?'':' + 200 g potatoes, boiled')},
+   {k:'m5',t:'21:00',n:'Icelandic yogurt 200 g + fruit salad ~250 g + 30 g almonds (weighed)'}
+  ];
+}
 var FOOD_TARGETS=[
- '\u22482,330 kcal \u00b7 ~210 g protein \u00b7 ~140 g carbs \u00b7 ~100 g fat',
+ '\u22482,300 kcal \u00b7 ~210 g protein \u00b7 ~140 g carbs \u00b7 ~100 g fat',
  'Maintenance ~2,650\u20132,750 \u2014 about a 400 deficit',
- 'Creatine 5 g daily, stirred into the skyr \u2014 the 07:45 tick covers it',
- 'At 12%: food to ~2,800, same training, lean bulk'
-];
-var FOOD_DIAL=[
- 'Faster than 0.6 kg a week \u2192 potatoes to 300 g',
- 'Slower than 0.3 kg a week for 3 weeks \u2192 potatoes to 100 g, or a 20-min daily walk',
- 'Lifts stall two sessions running, broken sleep or dizziness \u2192 +2 eggs that day; check sleep first',
- 'Full re-evaluation every 12 weeks \u2014 first ~28 Jan 2027'
+ 'Lift days get the bread at 07:45. Rest days get the potatoes at 16:00. Never both.',
+ 'At ~12%: food to ~2,800, same training, lean bulk'
 ];
 function foodFor(iso){
   var f=P().food.days[iso];
@@ -2892,69 +2930,123 @@ function foodFor(iso){
   if(!f.ate)f.ate={};
   return f;
 }
-function weighFor(){
-  var w=P().food.weigh,k=weekKeyOf(logicalISO());
-  if(!w[k])w[k]={};
-  return w[k];
-}
 function renderFood(){
-  var iso=logicalISO(),f=foodFor(iso);
-  var n=FOOD_PLAN.filter(function(m){return f.ate[m.k];}).length;
-  var h='<div class="prow"><span>'+fmtLong(iso)+'</span><b>'+n+' / '+FOOD_PLAN.length+'</b></div>';
-  h+=FOOD_PLAN.map(function(m,i){
+  var iso=logicalISO(),f=foodFor(iso),plan=foodPlan(iso),lift=isLiftDay(iso);
+  var n=plan.filter(function(m){return f.ate[m.k];}).length;
+  var h='<div class="prow"><span>'+fmtLong(iso)+' \u00b7 '+(lift?'lift day':'rest day')+'</span><b>'+n+' / '+plan.length+'</b></div>';
+  h+=plan.map(function(m,i){
     var on=!!f.ate[m.k];
     return '<div class="mealcard'+(on?' on':'')+'" data-meal="'+m.k+'" style="--i:'+i+'">'+
       '<div class="mealtime">'+m.t+'</div><div class="mealname">'+esc(m.n)+'</div>'+
       '<div class="mealtick">'+(on?'\u2713':'')+'</div></div>';
   }).join('');
   h+='<div class="pcard" style="margin-top:12px">'+
+    '<div class="togrow" data-omega="1"><span>Omega-3 \u00b7 ~1 g EPA+DHA</span><span class="mealtick'+(f.omega?' on':'')+'">'+(f.omega?'\u2713':'')+'</span></div>'+
     '<div class="togrow" data-clean="1"><span>Clean day \u00b7 nothing fried, no junk</span><span class="mealtick'+(f.clean===true?' on':'')+(f.clean===false?' bad':'')+'">'+(f.clean===true?'\u2713':f.clean===false?'\u2717':'')+'</span></div>'+
     '</div>';
   h+='<div class="psec">Targets</div><div class="pcard">'+FOOD_TARGETS.map(function(t){
     return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
-  var wi=weighFor();
-  h+='<div class="psec">'+periodLabel('weekly')+'</div><div class="pcard">'+
-    '<div class="pitem" style="color:#6a6a72;margin-bottom:8px">Sunday morning, after the bathroom, before food.</div>'+
-    [['w','weight','kg'],['waist','waist','cm at navel, relaxed'],['neck','neck','cm']].map(function(r){
-      return '<div class="setrow"><span class="setlab">'+r[1]+'</span>'+
-        '<input inputmode="decimal" placeholder="'+r[2]+'" data-wi="'+r[0]+'" value="'+esc(wi[r[0]]===undefined?'':wi[r[0]])+'"></div>';
-    }).join('')+'</div>';
-  var wk=P().food.weigh,keys=Object.keys(wk).filter(function(k){var x=wk[k];return x&&(x.w||x.waist||x.neck);}).sort().slice(-8).reverse();
-  if(keys.length>1){
-    h+='<div class="psec">Weigh-in history</div><div class="pcard">'+keys.map(function(k){
-      var x=wk[k],d=new Date(k+'T12:00:00');
-      return '<div class="pitem"><b style="color:var(--txt)">'+d.getDate()+' '+MO[d.getMonth()]+'</b> \u00b7 '+esc(x.w||'\u2014')+' kg \u00b7 waist '+esc(x.waist||'\u2014')+' \u00b7 neck '+esc(x.neck||'\u2014')+'</div>';
-    }).join('')+'</div>';
-  }
-  h+='<div class="psec">If the scale drifts</div><div class="pcard">'+FOOD_DIAL.map(function(t){
-    return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
   var cl=0,tot=0;
   Object.keys(P().food.days).sort().slice(-14).forEach(function(k){var x=P().food.days[k];if(x.clean!==null&&x.clean!==undefined){tot++;if(x.clean)cl++;}});
   if(tot)h+='<div class="psec">Clean days</div><div class="pcard"><div class="pitem">'+cl+' of the last '+tot+' reported days</div></div>';
-  h+='<div class="pitem" style="color:#6a6a72;margin-top:14px;font-size:12px">Water with every plate. Nothing fried. No rice. Two slices of whole-grain bread swap for the 200 g potatoes any day. One meal a week with friends replaces the 16:00 plate \u2014 grilled meat and salad; on lamb or beef drop the avocado and a tbsp of oil that day. Next day unchanged.</div>';
+  h+='<div class="pitem" style="color:#6a6a72;margin-top:14px;font-size:12px">Water with every plate. Nothing fried. No rice. Fruit salad: apple, orange, melon, berries \u2014 not grapes, mango or dates. The kitchen rotates the salad and vegetables. One meal a week with friends replaces the 16:00 plate \u2014 grilled meat and salad; on lamb or beef drop the avocado and the oil that day. Next day unchanged.</div>';
+  return h;
+}
+/* ---------- track ---------- */
+function isoOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function weighFor(){
+  var w=P().food.weigh,k=weekKeyOf(logicalISO());
+  if(!w[k])w[k]={};
+  return w[k];
+}
+function weeklogFor(){
+  var w=P().food.weeklog,k=weekKeyOf(logicalISO());
+  if(!w[k])w[k]={};
+  return w[k];
+}
+function avg7(endISO){
+  var wt=P().food.wt,sum=0,n=0,d0=new Date(endISO+'T12:00:00');
+  for(var i=0;i<7;i++){
+    var v=parseFloat(wt[isoOf(new Date(d0.getTime()-i*86400000))]);
+    if(!isNaN(v)){sum+=v;n++;}
+  }
+  return n?{avg:sum/n,n:n}:null;
+}
+var TRACK_DIAL=[
+ 'Rules start week 3. Each one needs two weeks of average, and you change one thing at a time.',
+ 'Faster than 0.6 kg a week \u2192 +200 g potatoes or 2 slices of bread daily',
+ 'Slower than 0.3 kg a week and the waist is not moving \u2192 40-min daily walk, or 20 min and the almonds out. Waist down 1 cm or more \u2192 hold, it is working.',
+ '3+ lifts backwards over two weeks with loss on target \u2192 butter out, almonds to 15 g, +250 g potatoes daily. Losing faster than target \u2192 +2 slices of bread instead. Fix sleep first either way.'
+];
+function renderTrack(){
+  var iso=logicalISO(),wt=P().food.wt,wi=weighFor(),wl=weeklogFor();
+  var h='<div class="prow"><span>'+fmtLong(iso)+'</span><b>daily</b></div>';
+  h+='<div class="pcard"><div class="pitem" style="color:#6a6a72;margin-bottom:8px">After the bathroom, before food. Act on the average, never on one morning.</div>'+
+    '<div class="setrow"><span class="setlab">weight</span><input inputmode="decimal" placeholder="kg" data-wt="1" value="'+esc(wt[iso]===undefined?'':wt[iso])+'"></div></div>';
+  var a=avg7(iso),b=avg7(isoOf(new Date(new Date(iso+'T12:00:00').getTime()-7*86400000)));
+  if(a){
+    var line='7-day average '+a.avg.toFixed(1)+' kg <span style="color:#6a6a72">\u00b7 '+a.n+' of 7 logged</span>';
+    if(b&&a.n>=4&&b.n>=4){
+      var d=a.avg-b.avg,dir=d<0?'down':'up';
+      line+='<br>'+dir+' '+Math.abs(d).toFixed(2)+' kg on the week';
+    }
+    h+='<div class="pcard" style="margin-top:12px"><div class="pitem">'+line+'</div></div>';
+  }
+  h+='<div class="psec">'+periodLabel('weekly')+'</div><div class="pcard">'+
+    [['waist','waist','cm at navel, relaxed'],['neck','neck','cm']].map(function(r){
+      return '<div class="setrow"><span class="setlab">'+r[1]+'</span><input inputmode="decimal" placeholder="'+r[2]+'" data-wi="'+r[0]+'" value="'+esc(wi[r[0]]===undefined?'':wi[r[0]])+'"></div>';
+    }).join('')+
+    '<div class="setrow"><span class="setlab">sleep</span><input inputmode="decimal" placeholder="h / night" data-wl="sleep" value="'+esc(wl.sleep===undefined?'':wl.sleep)+'"></div>'+
+    '<div class="setrow"><span class="setlab">energy</span><input inputmode="numeric" placeholder="1\u20135" data-wl="energy" value="'+esc(wl.energy===undefined?'':wl.energy)+'"></div>'+
+    '<div class="togrow" style="border-top:1px solid #242429;padding-top:11px"><span>Lifts this week</span><span>'+
+      ['up','flat','down'].map(function(v){
+        return '<button class="fchip'+(wl.lifts===v?' on':'')+'" style="padding:4px 10px;font-size:11.5px;margin-left:5px" data-wl2="'+v+'">'+v+'</button>';
+      }).join('')+'</span></div>'+
+    '</div>';
+  var wk=P().food.weigh,wlg=P().food.weeklog;
+  var keys=Object.keys(wk).filter(function(k){var x=wk[k];return x&&(x.waist||x.neck);}).sort().slice(-8).reverse();
+  if(keys.length>1){
+    h+='<div class="psec">Weekly history</div><div class="pcard">'+keys.map(function(k){
+      var x=wk[k],g=wlg[k]||{},d=new Date(k+'T12:00:00');
+      return '<div class="pitem"><b style="color:var(--txt)">'+d.getDate()+' '+MO[d.getMonth()]+'</b> \u00b7 waist '+esc(x.waist||'\u2014')+' \u00b7 neck '+esc(x.neck||'\u2014')+
+        (g.lifts?' \u00b7 lifts '+esc(g.lifts):'')+(g.sleep?' \u00b7 '+esc(g.sleep)+' h':'')+(g.energy?' \u00b7 energy '+esc(g.energy):'')+'</div>';
+    }).join('')+'</div>';
+  }
+  h+='<div class="psec">If the scale drifts</div><div class="pcard">'+TRACK_DIAL.map(function(t){
+    return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
+  h+='<div class="psec">Standing</div><div class="pcard">'+
+    '<div class="pitem">Monthly photos \u2014 front, side, back. Same spot, same light, same time.</div>'+
+    '<div class="pitem">Bloods: lipid panel + 25-OH vitamin D. Baseline this week, repeat at the January review. LDL up more than 20% \u2192 3 yolks out, whites in.</div>'+
+    '<div class="pitem">Full review every 12 weeks \u2014 first ~28 Jan 2027.</div>'+
+    '<div class="pitem">Navy estimate from waist and neck is a trend line, not a number to trust.</div>'+
+    '</div>';
   return h;
 }
 function renderBody(anim){
   if(!state)return;
   fixPerson(P(),'Aro');
-  $('#bodyChips').innerHTML=[['gym','Gym'],['food','Food']].map(function(c){
+  $('#bodyChips').innerHTML=[['gym','Gym'],['food','Food'],['track','Track']].map(function(c){
     return '<button class="fchip'+(bodyView===c[0]?' on':'')+'" data-bv="'+c[0]+'">'+c[1]+'</button>';
   }).join('');
   var el=$('#bodyBody');
   el.classList[anim?'add':'remove']('anim');
   if(bodyView==='gym'){
     $('#bodyTitle').textContent='Gym';
-    $('#bodySub').textContent='Upper \u2192 Lower \u2192 Rest, rolling. Every lift progresses \u2014 no holds.';
+    $('#bodySub').textContent='Upper \u2192 Lower \u2192 Rest, rolling \u00b7 05:30\u201307:30. Every lift progresses \u2014 no holds.';
     el.innerHTML=renderGym();
+  }else if(bodyView==='track'){
+    $('#bodyTitle').textContent='Track';
+    $('#bodySub').textContent='Weigh daily, act on the 7-day average. Waist and neck weekly.';
+    el.innerHTML=renderTrack();
   }else{
     $('#bodyTitle').textContent='Food';
-    $('#bodySub').textContent='Five fixed plates, in order \u00b7 \u22482,330 kcal, ~210 g protein.';
+    $('#bodySub').textContent='Five fixed plates, in order \u00b7 \u22482,300 kcal, ~210 g protein.';
     el.innerHTML=renderFood();
   }
 }
 $('#bodyPane').addEventListener('click',function(e){
   if(!state)return;
-  var t=e.target.closest?e.target.closest('[data-bv],[data-gt],[data-gd],[data-gdone],[data-gclear],[data-meal],[data-clean]'):null;
+  var t=e.target.closest?e.target.closest('[data-bv],[data-gt],[data-gd],[data-gdone],[data-gclear],[data-meal],[data-clean],[data-omega],[data-wl2]'):null;
   if(!t)return;
   if(t.hasAttribute('data-bv')){bodyView=t.getAttribute('data-bv');renderBody(true);return;}
   if(t.hasAttribute('data-gt')){gymStart(t.getAttribute('data-gt'));renderBody(false);return;}
@@ -2981,12 +3073,21 @@ $('#bodyPane').addEventListener('click',function(e){
     f3.clean=(f3.clean===null||f3.clean===undefined)?true:(f3.clean===true?false:null);
     touch();renderBody(false);return;
   }
+  if(t.hasAttribute('data-omega')){var f4=foodFor(logicalISO());f4.omega=!f4.omega;touch();renderBody(false);return;}
+  if(t.hasAttribute('data-wl2')){
+    var g=weeklogFor(),v=t.getAttribute('data-wl2');
+    g.lifts=(g.lifts===v)?'':v;touch();renderBody(false);return;
+  }
 });
 $('#bodyPane').addEventListener('input',function(e){
   if(!state)return;
   var t=e.target;
   if(t.hasAttribute('data-wi')){
     var wi=weighFor();wi[t.getAttribute('data-wi')]=t.value;touch();return;
+  }
+  if(t.hasAttribute('data-wt')){P().food.wt[logicalISO()]=t.value;touch();return;}
+  if(t.hasAttribute('data-wl')){
+    var wg=weeklogFor();wg[t.getAttribute('data-wl')]=t.value;touch();return;
   }
   if(!t.hasAttribute('data-gs'))return;
   var parts=t.getAttribute('data-gs').split('_'),s=gymToday();
