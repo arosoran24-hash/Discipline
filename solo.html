@@ -1903,7 +1903,7 @@ function periodLabel(c){
 }
 
 var state=null,cur=0,editing=false,statusTimer=null;
-var activeTab=0,logFilter='all',goalFilter='all',curCyc='weekly',ownerF='all',dataView='numbers',wzList=[],wzIdx=0,bodyView='gym';
+var activeTab=0,logFilter='all',goalFilter='all',curCyc='weekly',ownerF='all',dataView='numbers',wzList=[],wzIdx=0,bodyView='gym',clearArm=false;
 var cfg=null,sha=null,pushTimer=null,syncing=false,pendingRender=false,dirty=false,pushFails=0,retryTimer=null;
 try{cfg=JSON.parse(localStorage.getItem(CFGKEY)||'null');}catch(e){}
 if(!cfg){try{cfg=JSON.parse(localStorage.getItem(SHAREDCFG)||'null');if(cfg){localStorage.setItem(CFGKEY,JSON.stringify(cfg));}}catch(e){}}
@@ -2819,10 +2819,27 @@ function gymNextType(){
 function gymStart(type){
   if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'pushA';
   var s=gymToday();
-  if(s){s.type=type;s.sets={};}
-  else{s={id:uid(),date:logicalISO(),type:type,sets:{},done:false,start:Date.now()};gymSessions().push(s);}
+  if(s){
+    if(s.type===type)return s;            /* re-tapping the live chip changes nothing */
+    s.type=type;                          /* switch the view \u2014 logged sets are kept, keyed by exercise */
+  }else{
+    s={id:uid(),date:logicalISO(),type:type,sets:{},done:false,start:Date.now()};
+    gymSessions().push(s);
+  }
   if(!s.start)s.start=Date.now();
   touch();return s;
+}
+/* sets logged today under exercises that are not in the current list */
+function strandedSets(s){
+  if(!s)return 0;
+  var inList={};
+  (GYM_TYPES[s.type]?GYM_TYPES[s.type].list:[]).forEach(function(e){inList[e.id]=1;});
+  var n=0;
+  Object.keys(s.sets||{}).forEach(function(id){
+    if(inList[id])return;
+    if((s.sets[id]||[]).some(function(x){return x&&(x.r||x.w);}))n++;
+  });
+  return n;
 }
 function lastBest(exId){
   var ss=gymSessions();
@@ -2856,7 +2873,7 @@ function renderGym(){
   if(!lift){
     h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Rest day</div><div class="pitem">No training. In bed by 21:30, up at 05:00 \u2014 7 h asleep is the floor.</div>'+
       '<div class="lact" style="margin-top:12px"><button class="lbtn '+(s.done?'ghost':'res')+'" data-gdone="1">'+(s.done?'\u2713 logged':'mark done')+'</button>'+
-      '<button class="lbtn can" data-gclear="1">clear day</button></div></div>';
+      '<button class="lbtn can" data-gclear="1">'+(clearArm?'tap again to clear':'clear day')+'</button></div></div>';
     return h+gymRecent()+gymRulesCard();
   }
   var list=GYM_TYPES[s.type].list,cap=GYM_TYPES[s.type].cap;
@@ -2885,7 +2902,9 @@ function renderGym(){
   }).join('');
   h+='<div class="psec">After</div><div class="pcard">'+tickRows(GYM_AFTER,dl)+'</div>';
   h+='<div class="lact" style="margin-top:14px"><button class="lbtn '+(s.done?'ghost':'res')+'" data-gdone="1">'+(s.done?'\u2713 session finished':'finish session')+'</button>'+
-     '<button class="lbtn can" data-gclear="1">clear day</button></div>';
+     '<button class="lbtn can" data-gclear="1">'+(clearArm?'tap again to clear':'clear day')+'</button></div>';
+  var str=strandedSets(s);
+  if(str)h+='<div class="pitem" style="color:#6a6a72;margin-top:10px;font-size:12px">'+str+' exercise'+(str>1?'s':'')+' logged today under another session. Nothing was lost \u2014 tap that session to see them.</div>';
   return h+gymRecent()+gymRulesCard();
 }
 function gymRecent(){
@@ -3072,9 +3091,11 @@ $('#bodyPane').addEventListener('click',function(e){
     touch();renderBody(false);flash(sd.done?'session logged \u2713':'reopened');return;
   }
   if(t.hasAttribute('data-gclear')){
+    if(!clearArm){clearArm=true;renderBody(false);setTimeout(function(){if(clearArm){clearArm=false;renderBody(false);}},4000);return;}
+    clearArm=false;
     var ss=gymSessions(),d=logicalISO();
     P().gym.sessions=ss.filter(function(x){return x.date!==d;});
-    touch();renderBody(false);return;
+    touch();renderBody(false);flash('day cleared');return;
   }
   if(t.hasAttribute('data-meal')){
     var f=foodFor(logicalISO()),k=t.getAttribute('data-meal');
