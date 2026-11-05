@@ -2933,21 +2933,21 @@ function foodPlan(iso){
   var lift=isLiftDay(iso);
   return [
    {k:'m1',t:'05:30',n:'Banana + water'+(lift?' + pre-workout, full scoop':'')},
-   {k:'m2',t:'07:15',n:'Icelandic yogurt 200 g + 1 scoop whey + 5 g creatine'+(lift?' + 2 slices whole-grain bread':'')},
-   {k:'m3',t:'11:00',n:'6 eggs scrambled, 14 g butter (weighed)'},
+   {k:'m2',t:'07:15',n:'Skyr 450 g \u2014 half the 900 g tub \u2014 + 5 g creatine, stirred in'+(lift?' + 2 slices whole-grain bread':'')},
+   {k:'m3',t:'11:00',n:'7 eggs scrambled, 10 g butter + 1 tbsp cooking cream'},
    {k:'m4',t:'16:00',n:'300 g chicken breast cooked, tikka-style + big salad, 1 tbsp olive oil level, lemon, \u00bd avocado'+(lift?'':' + 200 g potatoes, boiled')},
-   {k:'m5',t:'20:00',n:'Icelandic yogurt 200 g + fruit salad ~250 g + 30 g almonds (weighed)'}
+   {k:'m5',t:'20:00',n:'Fruit salad ~250 g \u2014 apple, orange, melon, berries \u2014 + 30 g almonds (weighed)'}
   ];
 }
 var FOOD_SUPPS=[
- 'The banana is the fuel. Never lift on whey alone.',
+ 'No whey. No milk.',
+ 'The banana is the fuel \u2014 never lift on an empty stomach.',
  'Pre-workout: full scoop with the banana. Lightheaded \u2192 half a scoop. Lightheaded at half \u2192 out, and tell the doctor at the blood draw.',
- 'Creatine 5 g \u2014 in the 07:15 skyr',
- 'Whey 1 scoop, after the lift. Never two before it.',
+ 'Creatine 5 g \u2014 stirred into the 07:15 skyr',
  'Omega-3 ~1 g EPA+DHA daily'
 ];
 var FOOD_TARGETS=[
- '\u22482,300 kcal \u00b7 ~210 g protein \u00b7 ~140 g carbs \u00b7 ~100 g fat',
+ '\u22482,300 kcal \u00b7 ~190 g protein \u00b7 ~140 g carbs \u00b7 ~100 g fat',
  'Maintenance ~2,650\u20132,750 \u2014 about a 400 deficit',
  'Lift days get the bread at 07:15. Rest days get the potatoes at 16:00. Never both.',
  'At ~12%: food to ~2,800, same training, lean bulk'
@@ -2979,7 +2979,7 @@ function renderFood(){
   var cl=0,tot=0;
   Object.keys(P().food.days).sort().slice(-14).forEach(function(k){var x=P().food.days[k];if(x.clean!==null&&x.clean!==undefined){tot++;if(x.clean)cl++;}});
   if(tot)h+='<div class="psec">Clean days</div><div class="pcard"><div class="pitem">'+cl+' of the last '+tot+' reported days</div></div>';
-  h+='<div class="pitem" style="color:#6a6a72;margin-top:14px;font-size:12px">Water with every plate. Nothing fried. No rice. Fruit salad: apple, orange, melon, berries \u2014 not grapes, mango or dates. The kitchen rotates the salad and vegetables. One meal a week with friends replaces the 16:00 plate \u2014 grilled meat and salad; on lamb or beef drop the avocado and the oil that day. Next day unchanged.</div>';
+  h+='<div class="pitem" style="color:#6a6a72;margin-top:14px;font-size:12px">Water with every plate. Nothing fried. No rice. Two slices of whole-grain bread swap for the 200 g potatoes any day. One meal a week with friends replaces the 16:00 plate \u2014 grilled meat and salad.</div>';
   return h;
 }
 /* ---------- track ---------- */
@@ -3071,7 +3071,7 @@ function renderBody(anim){
     el.innerHTML=renderTrack();
   }else{
     $('#bodyTitle').textContent='Food';
-    $('#bodySub').textContent='Five fixed plates, in order \u00b7 \u22482,300 kcal, ~210 g protein.';
+    $('#bodySub').textContent='Five fixed plates, in order \u00b7 \u22482,300 kcal, ~190 g protein.';
     el.innerHTML=renderFood();
   }
 }
