@@ -2672,7 +2672,7 @@ function doFind(q){
   [['hourly','Shift'],['weekly','Weekly'],['monthly','Monthly'],['quarterly','Quarterly'],['half','Half-year'],['yearly','Yearly']].forEach(function(c){scan(p.cycles[c[0]].items,c[1],2,c[0]);});
   scan(p.cycles.noclock.trig,'Rule',2,'noclock');scan(p.cycles.noclock.judg,'Judgment',2,'noclock');
   scan(p.logs,'Log',4);scan(p.goals,'Goal',5);
-  GYM_UPPER_A.concat(GYM_UPPER_B,GYM_LOWER).forEach(function(x){
+  GYM_PUSH_A.concat(GYM_PUSH_B,GYM_PULL,GYM_LEGS).forEach(function(x){
     if(x.n.toLowerCase().indexOf(q)>-1&&res.length<60&&!res.some(function(r){return r.n===x.n;}))res.push({t:'Gym',n:x.n,tab:3});
   });
   foodPlan(logicalISO()).forEach(function(x){
@@ -2732,51 +2732,52 @@ $('#wzNext').addEventListener('click',function(){
 var EX_BENCH={id:'bench',n:'Flat bench',s:3,r:8,rt:10,g:'c',note:'alone: safeties set, or no collars'};
 var EX_INCLINE={id:'incline',n:'Incline bench',s:3,r:8,rt:10,g:'c',note:'alone: safeties set, or no collars'};
 var EX_OHP={id:'ohp',n:'Overhead press',s:3,r:8,rt:10,g:'c'};
-var UP_BACK=[
- {id:'row',n:'Row',s:4,r:10,rt:12,g:'c'},
- {id:'pulldown',n:'Lat pulldown / pull-up',s:4,r:10,rt:12,g:'c'}
-];
-var UP_ACC=[
+var PUSH_ACC=[
  {id:'lateral',n:'Lateral raise',s:3,r:15,rt:20},
- {id:'facepull',n:'Face pull',s:3,r:15,rt:20},
- {id:'shrug',n:'DB shrug',s:3,r:12,rt:15,note:'first to go if the session runs past 90 min'}
+ {id:'tri_oh',n:'Overhead triceps extension',s:3,r:12,rt:15,note:'light, strict \u2014 lying extension if the shoulder pinches'},
+ {id:'tri_push',n:'Pushdown',s:3,r:12,rt:15}
 ];
-var GYM_UPPER_A=[EX_BENCH,EX_INCLINE,EX_OHP].concat(UP_BACK,UP_ACC);
-var GYM_UPPER_B=[EX_OHP,EX_BENCH,EX_INCLINE].concat(UP_BACK,UP_ACC);
-var GYM_LOWER=[
+var GYM_PUSH_A=[EX_BENCH,EX_INCLINE,EX_OHP].concat(PUSH_ACC);
+var GYM_PUSH_B=[EX_OHP,EX_BENCH,EX_INCLINE].concat(PUSH_ACC);
+var GYM_PULL=[
+ {id:'row',n:'Row',s:4,r:10,rt:12,g:'c'},
+ {id:'pulldown',n:'Lat pulldown / pull-up',s:4,r:10,rt:12,g:'c'},
+ {id:'facepull',n:'Face pull',s:3,r:15,rt:20},
+ {id:'shrug',n:'DB shrug',s:3,r:12,rt:15},
+ {id:'bi_incline',n:'Incline DB curl',s:3,r:12,rt:15},
+ {id:'bi_machine',n:'Machine curl',s:3,r:12,rt:15}
+];
+var GYM_LEGS=[
  {id:'legpress',n:'Leg press',s:3,r:8,rt:10,g:'c',note:'jumps +10 kg'},
  {id:'legext',n:'Leg extension',s:3,r:12,rt:15,note:'zero balance, pure quads \u2014 leg press stays the heavy one'},
  {id:'rdl',n:'RDL',s:3,r:8,g:'c',note:'soft knees, hips back, weights slide down the thighs, stop when the hamstrings pull, flat back \u2014 load added slowest'},
- {id:'legcurl',n:'Leg curl',s:3,r:12,rt:15},
+ {id:'legcurl',n:'Leg curl',s:3,r:12,rt:15,note:'knee at the pivot, pad on the Achilles, lower in 3 seconds, stop short of straight, toes relaxed'},
  {id:'calf',n:'Calf raise',s:3,r:12,rt:15},
- {id:'bi_incline',n:'Incline DB curl',s:3,r:12,rt:15},
- {id:'bi_machine',n:'Machine curl',s:3,r:12,rt:15},
- {id:'tri_oh',n:'Overhead triceps extension',s:3,r:12,rt:15,note:'light, strict \u2014 lying extension if the shoulder pinches'},
- {id:'tri_push',n:'Pushdown',s:3,r:12,rt:15},
  {id:'revcrunch',n:'Reverse crunch / cable crunch',s:3,r:12,rt:15}
 ];
 var GYM_WARM=[
- {id:'bandpull',n:'Band pull-aparts 2\u00d720'},
+ {id:'bandpull',n:'Rear-delt fly or band pull-aparts \u00b7 2\u00d715\u201320 light'},
  {id:'ascend',n:'Ascending sets on the first compound \u00b7 bar \u00d710, 50% \u00d76, 75% \u00d73'}
 ];
 var GYM_AFTER=[{id:'stretch',n:'Doorway chest stretch \u00b7 30 s each side'}];
 var GYM_TYPES={
- upperA:{label:'Upper A',list:GYM_UPPER_A,lift:true,cap:90},
- upperB:{label:'Upper B',list:GYM_UPPER_B,lift:true,cap:90},
- lower:{label:'Lower + arms',list:GYM_LOWER,lift:true,cap:100},
+ pushA:{label:'Push A',list:GYM_PUSH_A,lift:true,cap:60},
+ pushB:{label:'Push B',list:GYM_PUSH_B,lift:true,cap:60},
+ pull:{label:'Pull',list:GYM_PULL,lift:true,cap:60},
+ legs:{label:'Legs',list:GYM_LEGS,lift:true,cap:60},
  rest:{label:'Rest',list:[],lift:false}
 };
 /* earlier plans, kept so logged history still reads */
-var GYM_LEGACY={pull:'upperA',push:'upperA',upper:'upperA',off:'rest',lowerA:'lower',lowerB:'lower'};
+var GYM_LEGACY={push:'pushA',upper:'pushA',upperA:'pushA',upperB:'pushB',lower:'legs',lowerA:'legs',lowerB:'legs',off:'rest'};
 var GYM_RULES=[
  'Add reps until every set hits the top of its range at \u22642 RIR, then +2.5 kg upper, +5 kg lower, +10 on leg press \u2014 and back to the bottom.',
  'Repeating a session is fine. All lifts progress \u2014 no holds.',
  '1\u20133 reps in reserve, last set closest to 1. Same technique and range every session.',
- 'Rest 2\u20133 min on compounds, ~90 s on accessories.',
- 'Upper fits 90 min: over, drop shrugs; still over, 2-min rests on compounds. Lower runs 90\u2013100.',
- 'Legs first, arms after, abs last. Running late: superset a curl with a triceps move \u2014 nothing gets cut.',
+ 'Rest 2\u20133 min on compounds, ~90 s on accessories. Each session runs about 60 min.',
+ 'New machine or lift: the first session is for finding the weight \u2014 warm-up sets, then the load where 12 clean reps live. Never start at a guess.',
  'Barbell presses alone: safeties set, or no collars. Never test a 1RM.',
- 'Week 12: deload at 60% load and half the sets, then review.',
+ 'Lightheaded: sit down, sugar, machines only for the rest of it.',
+ 'Every 12 weeks: deload week at 60% load and half the sets, eaten at maintenance ~2,650, then review.',
  'Ice bath evening only, at least 4 h after lifting, 2\u20135 min, never alone.'
 ];
 function gymSessions(){return P().gym.sessions;}
@@ -2784,7 +2785,7 @@ function gymToday(){
   var d=logicalISO(),ss=gymSessions();
   for(var i=0;i<ss.length;i++)if(ss[i].date===d){
     var x=ss[i];
-    if(!GYM_TYPES[x.type])x.type=GYM_LEGACY[x.type]||'upperA';
+    if(!GYM_TYPES[x.type])x.type=GYM_LEGACY[x.type]||'pushA';
     return x;
   }
   return null;
@@ -2794,28 +2795,29 @@ function gymDaily(iso){
   if(!dd[iso])dd[iso]={};
   return dd[iso];
 }
-function gymUpperVariant(){
+function gymPushVariant(){
   var ss=gymSessions();
   for(var i=ss.length-1;i>=0;i--){
     var t=GYM_TYPES[ss[i].type]?ss[i].type:(GYM_LEGACY[ss[i].type]||'');
-    if(t==='upperA')return 'upperB';
-    if(t==='upperB')return 'upperA';
+    if(t==='pushA')return 'pushB';
+    if(t==='pushB')return 'pushA';
   }
-  return 'upperA';
+  return 'pushA';
 }
 function gymNextType(){
   var ss=gymSessions(),d=logicalISO();
   for(var i=ss.length-1;i>=0;i--){
     if(ss[i].date===d)continue;
     var t=GYM_TYPES[ss[i].type]?ss[i].type:(GYM_LEGACY[ss[i].type]||'');
-    if(t==='upperA'||t==='upperB')return 'lower';
-    if(t==='lower')return 'rest';
-    if(t==='rest')return gymUpperVariant();
+    if(t==='pushA'||t==='pushB')return 'pull';
+    if(t==='pull')return 'legs';
+    if(t==='legs')return 'rest';
+    if(t==='rest')return gymPushVariant();
   }
-  return 'upperA';
+  return 'pushA';
 }
 function gymStart(type){
-  if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'upperA';
+  if(!GYM_TYPES[type])type=GYM_LEGACY[type]||'pushA';
   var s=gymToday();
   if(s){s.type=type;s.sets={};}
   else{s={id:uid(),date:logicalISO(),type:type,sets:{},done:false,start:Date.now()};gymSessions().push(s);}
@@ -2843,16 +2845,16 @@ function tickRows(arr,dl){
 function renderGym(){
   var iso=logicalISO(),s=gymToday(),sugg=gymNextType(),dl=gymDaily(iso);
   var lift=s?!!GYM_TYPES[s.type].lift:null;
-  var h='<div class="chips" style="margin:14px 0 4px">'+['upperA','upperB','lower','rest'].map(function(t){
+  var h='<div class="chips" style="margin:14px 0 4px">'+['pushA','pushB','pull','legs','rest'].map(function(t){
     var on=s&&s.type===t;
     return '<button class="fchip'+(on?' on':'')+'" data-gt="'+t+'">'+GYM_TYPES[t].label+(!s&&t===sugg?' \u2190':'')+'</button>';
   }).join('')+'</div>';
   if(!s){
-    h+='<div class="empty">Pick today\u2019s session. Next up: <b style="color:var(--txt)">'+GYM_TYPES[sugg].label+'</b> \u2014 Upper \u2192 Lower \u2192 Rest, rolling. Lift between 05:30 and 07:30.</div>';
+    h+='<div class="empty">Pick today\u2019s session. Next up: <b style="color:var(--txt)">'+GYM_TYPES[sugg].label+'</b> \u2014 Push \u2192 Pull \u2192 Legs \u2192 Rest, rolling. Lift 06:00\u201307:00.</div>';
     return h+gymRulesCard();
   }
   if(!lift){
-    h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Rest day</div><div class="pitem">No training. Sleep 21:00\u201322:00 to 05:00 \u2014 7 h is the floor.</div>'+
+    h+='<div class="pcard" style="margin-top:12px"><div class="pwhen">Rest day</div><div class="pitem">No training. In bed by 21:30, up at 05:00 \u2014 7 h asleep is the floor.</div>'+
       '<div class="lact" style="margin-top:12px"><button class="lbtn '+(s.done?'ghost':'res')+'" data-gdone="1">'+(s.done?'\u2713 logged':'mark done')+'</button>'+
       '<button class="lbtn can" data-gclear="1">clear day</button></div></div>';
     return h+gymRecent()+gymRulesCard();
@@ -2911,17 +2913,24 @@ function isLiftDay(iso){
 function foodPlan(iso){
   var lift=isLiftDay(iso);
   return [
-   {k:'m1',t:'06:15',n:'Banana + water'},
-   {k:'m2',t:'07:45',n:'Icelandic yogurt 200 g + 1 scoop whey + 5 g creatine'+(lift?' + 2 slices whole-grain bread':'')},
+   {k:'m1',t:'05:30',n:'Banana + water'+(lift?' + pre-workout, full scoop':'')},
+   {k:'m2',t:'07:15',n:'Icelandic yogurt 200 g + 1 scoop whey + 5 g creatine'+(lift?' + 2 slices whole-grain bread':'')},
    {k:'m3',t:'11:00',n:'6 eggs scrambled, 14 g butter (weighed)'},
    {k:'m4',t:'16:00',n:'300 g chicken breast cooked, tikka-style + big salad, 1 tbsp olive oil level, lemon, \u00bd avocado'+(lift?'':' + 200 g potatoes, boiled')},
-   {k:'m5',t:'21:00',n:'Icelandic yogurt 200 g + fruit salad ~250 g + 30 g almonds (weighed)'}
+   {k:'m5',t:'20:00',n:'Icelandic yogurt 200 g + fruit salad ~250 g + 30 g almonds (weighed)'}
   ];
 }
+var FOOD_SUPPS=[
+ 'The banana is the fuel. Never lift on whey alone.',
+ 'Pre-workout: full scoop with the banana. Lightheaded \u2192 half a scoop. Lightheaded at half \u2192 out, and tell the doctor at the blood draw.',
+ 'Creatine 5 g \u2014 in the 07:15 skyr',
+ 'Whey 1 scoop, after the lift. Never two before it.',
+ 'Omega-3 ~1 g EPA+DHA daily'
+];
 var FOOD_TARGETS=[
  '\u22482,300 kcal \u00b7 ~210 g protein \u00b7 ~140 g carbs \u00b7 ~100 g fat',
  'Maintenance ~2,650\u20132,750 \u2014 about a 400 deficit',
- 'Lift days get the bread at 07:45. Rest days get the potatoes at 16:00. Never both.',
+ 'Lift days get the bread at 07:15. Rest days get the potatoes at 16:00. Never both.',
  'At ~12%: food to ~2,800, same training, lean bulk'
 ];
 function foodFor(iso){
@@ -2945,6 +2954,8 @@ function renderFood(){
     '<div class="togrow" data-clean="1"><span>Clean day \u00b7 nothing fried, no junk</span><span class="mealtick'+(f.clean===true?' on':'')+(f.clean===false?' bad':'')+'">'+(f.clean===true?'\u2713':f.clean===false?'\u2717':'')+'</span></div>'+
     '</div>';
   h+='<div class="psec">Targets</div><div class="pcard">'+FOOD_TARGETS.map(function(t){
+    return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
+  h+='<div class="psec">Supplements</div><div class="pcard">'+FOOD_SUPPS.map(function(t){
     return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
   var cl=0,tot=0;
   Object.keys(P().food.days).sort().slice(-14).forEach(function(k){var x=P().food.days[k];if(x.clean!==null&&x.clean!==undefined){tot++;if(x.clean)cl++;}});
@@ -2973,10 +2984,11 @@ function avg7(endISO){
   return n?{avg:sum/n,n:n}:null;
 }
 var TRACK_DIAL=[
- 'Rules start week 3. Each one needs two weeks of average, and you change one thing at a time.',
- 'Faster than 0.6 kg a week \u2192 +200 g potatoes or 2 slices of bread daily',
- 'Slower than 0.3 kg a week and the waist is not moving \u2192 40-min daily walk, or 20 min and the almonds out. Waist down 1 cm or more \u2192 hold, it is working.',
- '3+ lifts backwards over two weeks with loss on target \u2192 butter out, almonds to 15 g, +250 g potatoes daily. Losing faster than target \u2192 +2 slices of bread instead. Fix sleep first either way.'
+ 'Rules start week 3, and you change one thing at a time.',
+ 'Faster than 0.6 kg a week on a 2-week average \u2192 +200 g potatoes or 2 slices of bread daily',
+ 'Under 0.2 kg a week on a 4-week average and the waist not down 1.5 cm in those four weeks \u2192 40-min daily walk, or 20 min and the almonds out. Waist down \u2192 hold, it is working.',
+ '3+ lifts backwards over two weeks with loss on target \u2192 butter out, almonds to 15 g, +250 g potatoes daily. Losing faster than target \u2192 +2 slices of bread instead. Fix sleep first either way.',
+ 'Expect 0.25\u20130.45 kg a week after week 2, slowing as muscle comes on.'
 ];
 function renderTrack(){
   var iso=logicalISO(),wt=P().food.wt,wi=weighFor(),wl=weeklogFor();
@@ -3016,7 +3028,7 @@ function renderTrack(){
     return '<div class="pitem">'+esc(t)+'</div>';}).join('')+'</div>';
   h+='<div class="psec">Standing</div><div class="pcard">'+
     '<div class="pitem">Monthly photos \u2014 front, side, back. Same spot, same light, same time.</div>'+
-    '<div class="pitem">Bloods: lipid panel + 25-OH vitamin D. Baseline this week, repeat at the January review. LDL up more than 20% \u2192 3 yolks out, whites in.</div>'+
+    '<div class="pitem">Bloods: lipid panel + 25-OH vitamin D, baseline this week. Baseline LDL over 130 mg/dL (3.4 mmol/L) \u2192 3 yolks out now, whites in. Otherwise repeat in January; LDL up more than 20% \u2192 same change.</div>'+
     '<div class="pitem">Full review every 12 weeks \u2014 first ~28 Jan 2027.</div>'+
     '<div class="pitem">Navy estimate from waist and neck is a trend line, not a number to trust.</div>'+
     '</div>';
@@ -3032,7 +3044,7 @@ function renderBody(anim){
   el.classList[anim?'add':'remove']('anim');
   if(bodyView==='gym'){
     $('#bodyTitle').textContent='Gym';
-    $('#bodySub').textContent='Upper \u2192 Lower \u2192 Rest, rolling \u00b7 05:30\u201307:30. Every lift progresses \u2014 no holds.';
+    $('#bodySub').textContent='Push \u2192 Pull \u2192 Legs \u2192 Rest, rolling \u00b7 06:00\u201307:00. Every lift progresses \u2014 no holds.';
     el.innerHTML=renderGym();
   }else if(bodyView==='track'){
     $('#bodyTitle').textContent='Track';
